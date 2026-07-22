@@ -181,16 +181,44 @@ const VIEWS = {
 
 let RAW=[], FILTERED=[], CURRENT_VIEW='consolidado', SORT={key:'nPostulacion',dir:1};
 
+function loadJsonp(url, timeoutMs = 30000) {
+  return new Promise((resolve, reject) => {
+    const callbackName = '__dashboardCallback_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    const script = document.createElement('script');
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('Tiempo de espera agotado al consultar Apps Script'));
+    }, timeoutMs);
+
+    function cleanup() {
+      clearTimeout(timer);
+      delete window[callbackName];
+      script.remove();
+    }
+
+    window[callbackName] = (json) => {
+      cleanup();
+      resolve(json);
+    };
+
+    const sep = url.includes('?') ? '&' : '?';
+    script.src = url + sep + 'callback=' + encodeURIComponent(callbackName) + '&_=' + Date.now();
+    script.onerror = () => {
+      cleanup();
+      reject(new Error('No se pudo cargar la respuesta JSONP del Web App'));
+    };
+    document.head.appendChild(script);
+  });
+}
+
 async function loadData(){
   setLoading();
   if(!/^https:\/\//.test(API_URL)){
-    showNotice('Configura la URL del Web App consolidado en <b>API_URL</b> o abre este archivo con <code>?api=https://.../exec</code>.');
+    showNotice('Configura la URL del Web App consolidado en <b>API_URL</b>.');
     RAW=[]; applyFilters(); return;
   }
   try{
-    const response=await fetch(API_URL,{cache:'no-store'});
-    if(!response.ok) throw new Error('HTTP '+response.status);
-    const json=await response.json();
+    const json = await loadJsonp(API_URL);
     if(json.ok===false) throw new Error(json.error||'Error del Apps Script');
     RAW=Array.isArray(json.data)?json.data:[];
     hideNotice();
@@ -199,7 +227,7 @@ async function loadData(){
     document.getElementById('sourceCounts').textContent=`Fuentes: F ${s.factibilidad||0} · A&C ${s.admisibilidadConsistencia||0} · CORE ${s.priorizacionCore||0}`;
     buildFilters(); applyFilters();
   }catch(err){
-    showNotice('No fue posible cargar el dashboard: <b>'+escapeHtml(err.message)+'</b>. Revisa el despliegue y los permisos del Web App.');
+    showNotice('No fue posible cargar el dashboard: <b>'+escapeHtml(err.message)+'</b>. Verifica que el Web App esté desplegado y que el código acepte el parámetro <code>callback</code>.');
     RAW=[]; applyFilters();
   }
 }
