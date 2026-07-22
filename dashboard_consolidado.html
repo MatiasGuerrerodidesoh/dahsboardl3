@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard Consolidado FNDR L3 — DIDESOH</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --azul:#0B2545; --azul2:#1E3A5F; --azul3:#315D88;
+    --bg:#F4F6F9; --texto:#17202A; --muted:#65717E; --borde:#DCE2EA;
+    --verde:#2E7D32; --verde-bg:#E8F5E9;
+    --amarillo:#B77900; --amarillo-bg:#FFF8E1;
+    --rojo:#C62828; --rojo-bg:#FFEBEE;
+    --morado:#6A1B9A; --morado-bg:#F3E5F5;
+    --gris:#546E7A; --gris-bg:#ECEFF1;
+  }
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;margin:0;background:var(--bg);color:var(--texto)}
+  header{background:linear-gradient(135deg,var(--azul),var(--azul2));color:#fff;padding:18px 24px;display:flex;justify-content:space-between;gap:20px;align-items:center;box-shadow:0 2px 10px #0002}
+  header h1{font-size:21px;margin:0 0 3px;font-weight:700}
+  header .sub{font-size:12px;opacity:.82}
+  .header-right{text-align:right;font-size:12px}
+  button{font:inherit}
+  .reload{margin-top:7px;background:#ffffff18;color:#fff;border:1px solid #ffffff45;border-radius:5px;padding:6px 11px;cursor:pointer}
+  .container{max-width:1700px;margin:auto;padding:20px 24px 32px}
+  .notice{display:none;background:var(--amarillo-bg);border-left:4px solid var(--amarillo);padding:12px 14px;border-radius:6px;margin-bottom:15px;font-size:13px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:16px}
+  .kpi{background:#fff;border-radius:9px;padding:14px 15px;border-left:4px solid var(--azul3);box-shadow:0 1px 5px #0000000d;min-height:83px}
+  .kpi .label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.45px}
+  .kpi .value{font-size:27px;font-weight:750;margin-top:4px;color:var(--azul)}
+  .kpi .detail{font-size:11px;color:var(--muted);margin-top:2px}
+  .kpi.verde{border-left-color:var(--verde)} .kpi.verde .value{color:var(--verde)}
+  .kpi.amarillo{border-left-color:var(--amarillo)} .kpi.amarillo .value{color:var(--amarillo)}
+  .kpi.morado{border-left-color:var(--morado)} .kpi.morado .value{color:var(--morado)}
+  .kpi.rojo{border-left-color:var(--rojo)} .kpi.rojo .value{color:var(--rojo)}
+  .panel{background:#fff;border-radius:9px;box-shadow:0 1px 5px #0000000d;margin-bottom:16px}
+  .panel-title{padding:13px 16px;border-bottom:1px solid var(--borde);font-weight:700;font-size:14px;display:flex;justify-content:space-between;gap:12px;align-items:center}
+  .pipeline{display:grid;grid-template-columns:repeat(7,minmax(120px,1fr));gap:8px;padding:15px;overflow-x:auto}
+  .stage{min-width:120px;border:1px solid var(--borde);border-radius:8px;padding:11px;position:relative;background:#fff}
+  .stage:not(:last-child)::after{content:"›";position:absolute;right:-8px;top:28px;color:#9AA5B1;font-size:20px;z-index:2}
+  .stage .n{font-size:22px;font-weight:750;color:var(--azul)}
+  .stage .t{font-size:11px;color:var(--muted);margin-top:2px}
+  .stage .bar{height:5px;background:#E7ECF2;border-radius:4px;margin-top:8px;overflow:hidden}
+  .stage .bar i{display:block;height:100%;background:var(--azul3);border-radius:4px}
+  .filters{display:flex;flex-wrap:wrap;gap:10px;align-items:end;padding:13px 15px}
+  .filters label{display:flex;flex-direction:column;font-size:10.5px;color:var(--muted);gap:4px}
+  .filters input,.filters select{border:1px solid var(--borde);border-radius:5px;padding:7px 8px;font-size:12.5px;min-width:145px;background:#fff}
+  .filters input{min-width:240px}
+  .filters button{background:var(--azul);color:#fff;border:0;border-radius:5px;padding:8px 13px;cursor:pointer}
+  .tabs{display:flex;gap:4px;padding:0 15px;border-bottom:1px solid var(--borde);overflow-x:auto}
+  .tab{background:none;border:0;padding:11px 12px;cursor:pointer;color:var(--muted);white-space:nowrap;border-bottom:3px solid transparent}
+  .tab.active{color:var(--azul);font-weight:700;border-bottom-color:var(--azul)}
+  .table-wrap{overflow:auto;max-height:66vh}
+  table{border-collapse:collapse;width:100%;font-size:12px;min-width:1280px}
+  th{position:sticky;top:0;background:var(--azul);color:#fff;text-align:left;padding:9px 8px;border-right:1px solid #ffffff24;z-index:2;cursor:pointer;white-space:nowrap}
+  td{padding:8px;border-bottom:1px solid #E8EDF3;vertical-align:top}
+  tbody tr:hover{background:#F0F5FA}
+  .project{font-weight:650;max-width:300px}
+  .org{max-width:220px;color:#34495E}
+  .muted{color:#8A949E}
+  .pill{display:inline-block;padding:3px 7px;border-radius:12px;font-size:10.5px;font-weight:650;line-height:1.25;white-space:nowrap}
+  .pill.verde{background:var(--verde-bg);color:var(--verde)}
+  .pill.amarillo{background:var(--amarillo-bg);color:#805600}
+  .pill.rojo{background:var(--rojo-bg);color:var(--rojo)}
+  .pill.morado{background:var(--morado-bg);color:var(--morado)}
+  .pill.gris{background:var(--gris-bg);color:var(--gris)}
+  .link{display:inline-block;color:var(--azul);font-weight:650;text-decoration:none;margin:1px 5px 1px 0}
+  .link:hover{text-decoration:underline}
+  .alert-dot{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--rojo-bg);color:var(--rojo);font-weight:800;font-size:11px;cursor:help}
+  .detail-btn{border:1px solid var(--borde);background:#fff;border-radius:5px;padding:5px 8px;cursor:pointer;color:var(--azul)}
+  .empty,.loading{text-align:center;padding:50px;color:#8B96A3}
+  .footer{text-align:center;color:#8B96A3;font-size:11px;padding:20px 0 0}
+  .drawer-backdrop{position:fixed;inset:0;background:#0005;display:none;z-index:20}
+  .drawer{position:absolute;right:0;top:0;height:100%;width:min(720px,95vw);background:#fff;overflow:auto;box-shadow:-5px 0 20px #0003;padding:20px}
+  .drawer h2{font-size:19px;margin:0 35px 3px 0;color:var(--azul)}
+  .drawer .close{position:absolute;right:16px;top:14px;border:0;background:#EEF2F6;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:18px}
+  .drawer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}
+  .field{border:1px solid var(--borde);border-radius:7px;padding:10px;min-height:60px}
+  .field .k{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+  .field .v{font-size:13px;margin-top:4px;white-space:pre-wrap;word-break:break-word}
+  .field.wide{grid-column:1/-1}
+  @media(max-width:800px){header{align-items:flex-start}.container{padding:14px}.pipeline{grid-template-columns:repeat(7,140px)}.filters input{min-width:190px}.drawer-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>🛰 Dashboard Consolidado FNDR L3</h1>
+    <div class="sub">Factibilidad · Admisibilidad y Consistencia · Priorización CORE · Ejecución</div>
+  </div>
+  <div class="header-right">
+    <div id="updatedAt">Cargando…</div>
+    <div id="sourceCounts"></div>
+    <button class="reload" id="reloadBtn">↻ Recargar</button>
+  </div>
+</header>
+
+<div class="container">
+  <div id="notice" class="notice"></div>
+  <div id="kpis" class="kpis"></div>
+
+  <section class="panel">
+    <div class="panel-title"><span>Embudo del proceso</span><span id="visibleCount" class="muted"></span></div>
+    <div id="pipeline" class="pipeline"></div>
+  </section>
+
+  <section class="panel">
+    <div class="filters">
+      <label>Buscar
+        <input id="fBuscar" placeholder="N°, proyecto, institución o RUT">
+      </label>
+      <label>Etapa
+        <select id="fEtapa"><option value="">Todas</option></select>
+      </label>
+      <label>Fondo
+        <select id="fFondo"><option value="">Todos</option></select>
+      </label>
+      <label>Comuna
+        <select id="fComuna"><option value="">Todas</option></select>
+      </label>
+      <label>Evaluador/a
+        <select id="fEvaluador"><option value="">Todas/os</option></select>
+      </label>
+      <button id="clearBtn">Limpiar</button>
+    </div>
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-view="consolidado">Consolidado</button>
+      <button class="tab" data-view="factibilidad">Factibilidad</button>
+      <button class="tab" data-view="ac">A&C</button>
+      <button class="tab" data-view="core">CORE y ejecución</button>
+      <button class="tab" data-view="alertas">Alertas</button>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr id="thead"></tr></thead><tbody id="tbody"><tr><td class="loading">Cargando datos…</td></tr></tbody></table>
+    </div>
+  </section>
+
+  <div class="footer">DIDESOH · Gobierno Regional de Valparaíso · Cruce por N° de postulación</div>
+</div>
+
+<div id="drawerBackdrop" class="drawer-backdrop">
+  <aside class="drawer" id="drawer"><button class="close" id="drawerClose">×</button><div id="drawerContent"></div></aside>
+</div>
+
+<script>
+// Puedes pasar la URL sin editar el archivo: dashboard_consolidado.html?api=https://.../exec
+const PARAM_API = new URLSearchParams(location.search).get('api');
+const API_URL = PARAM_API || 'REEMPLAZAR_CON_URL_WEB_APP_CONSOLIDADO';
+
+const VIEWS = {
+  consolidado: [
+    ['nPostulacion','N°',55],['nombreProyecto','Proyecto',270],['institucion','Institución',210],
+    ['fondo','Fondo',90],['monto','Monto',105,'money'],['etapa','Etapa',150,'stage'],
+    ['estadoFactibilidad','Factibilidad',175,'status'],['dictamenAC','Dictamen A&C',165,'status'],
+    ['acuerdoCoreNumero','Acuerdo CORE',105,'core'],['resolucionNumero','Resolución',105,'resolution'],
+    ['estadoEjecucion','Ejecución',110,'status'],['alertas','⚠',42,'alerts'],['_detail','Detalle',65,'detail']
+  ],
+  factibilidad: [
+    ['nPostulacion','N°',55],['nombreProyecto','Proyecto',280],['evaluadorFactibilidad','Evaluador/a',130],
+    ['estadoFactibilidad','Estado',190,'status'],['tandaFactibilidad','Tanda',55],['observacionesFactibilidad','Obs.',55],
+    ['fechaRevisionFactibilidad','Última revisión',105,'date'],['diasDesdeEnvioFactibilidad','Días envío',75,'days'],
+    ['estadoGestionOrganizacion','Gestión org.',130,'status'],['enlacePautaFactibilidad','Pauta',65,'link'],['_detail','Detalle',65,'detail']
+  ],
+  ac: [
+    ['nPostulacion','N°',55],['nombreProyecto','Proyecto',280],['evaluadorAC','Evaluador/a',130],
+    ['rondaAC','Ronda',55],['dictamenAC','Dictamen',180,'status'],['estadoAC','Estado proyecto',160,'status'],
+    ['observacionesAbiertasAC','Obs. abiertas',75],['observacionesCerradasAC','Obs. cerradas',75],
+    ['fechaEvaluacionAC','Fecha evaluación',105,'date'],['enlacePautaAC','Pauta',65,'link'],['pdfAC','PDF',55,'link'],['_detail','Detalle',65,'detail']
+  ],
+  core: [
+    ['nPostulacion','N°',55],['nombreProyecto','Proyecto',270],['pronunciamiento','Pronunciamiento',180,'status'],
+    ['acuerdoCoreNumero','N° acuerdo',85],['acuerdoCoreFecha','Fecha acuerdo',100,'date'],['acuerdoCoreUrl','Acuerdo',65,'link'],
+    ['resolucionNumero','N° resolución',90],['resolucionFecha','Fecha resolución',105,'date'],['resolucionUrl','Resolución',70,'link'],
+    ['fechaInicioEjecucion','Inicio',90,'date'],['fechaTerminoEjecucion','Término',90,'date'],['estadoEjecucion','Ejecución',115,'status'],['_detail','Detalle',65,'detail']
+  ],
+  alertas: [
+    ['nPostulacion','N°',55],['nombreProyecto','Proyecto',290],['etapa','Etapa',150,'stage'],
+    ['alertas','Alertas',420,'alertText'],['_detail','Detalle',65,'detail']
+  ]
+};
+
+let RAW=[], FILTERED=[], CURRENT_VIEW='consolidado', SORT={key:'nPostulacion',dir:1};
+
+async function loadData(){
+  setLoading();
+  if(!/^https:\/\//.test(API_URL)){
+    showNotice('Configura la URL del Web App consolidado en <b>API_URL</b> o abre este archivo con <code>?api=https://.../exec</code>.');
+    RAW=[]; applyFilters(); return;
+  }
+  try{
+    const response=await fetch(API_URL,{cache:'no-store'});
+    if(!response.ok) throw new Error('HTTP '+response.status);
+    const json=await response.json();
+    if(json.ok===false) throw new Error(json.error||'Error del Apps Script');
+    RAW=Array.isArray(json.data)?json.data:[];
+    hideNotice();
+    document.getElementById('updatedAt').textContent='Actualizado: '+formatDateTime(json.updatedAt);
+    const s=json.sources||{};
+    document.getElementById('sourceCounts').textContent=`Fuentes: F ${s.factibilidad||0} · A&C ${s.admisibilidadConsistencia||0} · CORE ${s.priorizacionCore||0}`;
+    buildFilters(); applyFilters();
+  }catch(err){
+    showNotice('No fue posible cargar el dashboard: <b>'+escapeHtml(err.message)+'</b>. Revisa el despliegue y los permisos del Web App.');
+    RAW=[]; applyFilters();
+  }
+}
+
+function setLoading(){
+  document.getElementById('tbody').innerHTML='<tr><td colspan="20" class="loading">Cargando datos…</td></tr>';
+}
+function showNotice(html){const n=document.getElementById('notice');n.innerHTML=html;n.style.display='block'}
+function hideNotice(){document.getElementById('notice').style.display='none'}
+
+function buildFilters(){
+  fillSelect('fEtapa', unique('etapa'),'Todas');
+  fillSelect('fFondo', unique('fondo'),'Todos');
+  fillSelect('fComuna', unique('comuna'),'Todas');
+  const ev=new Set(); RAW.forEach(r=>{if(r.evaluadorFactibilidad)ev.add(r.evaluadorFactibilidad);if(r.evaluadorAC)ev.add(r.evaluadorAC)});
+  fillSelect('fEvaluador',[...ev].sort(localeSort),'Todas/os');
+}
+function unique(key){return [...new Set(RAW.map(r=>clean(r[key])).filter(Boolean))].sort(localeSort)}
+function fillSelect(id,values,all){const el=document.getElementById(id),old=el.value;el.innerHTML=`<option value="">${all}</option>`+values.map(v=>`<option>${escapeHtml(v)}</option>`).join('');if(values.includes(old))el.value=old}
+
+function applyFilters(){
+  const q=clean(document.getElementById('fBuscar').value).toLowerCase();
+  const etapa=document.getElementById('fEtapa').value, fondo=document.getElementById('fFondo').value,
+        comuna=document.getElementById('fComuna').value, evaluador=document.getElementById('fEvaluador').value;
+  FILTERED=RAW.filter(r=>{
+    if(etapa&&clean(r.etapa)!==etapa)return false;
+    if(fondo&&clean(r.fondo)!==fondo)return false;
+    if(comuna&&clean(r.comuna)!==comuna)return false;
+    if(evaluador&&clean(r.evaluadorFactibilidad)!==evaluador&&clean(r.evaluadorAC)!==evaluador)return false;
+    if(CURRENT_VIEW==='alertas'&&(!Array.isArray(r.alertas)||!r.alertas.length))return false;
+    if(q&&!JSON.stringify(r).toLowerCase().includes(q))return false;
+    return true;
+  });
+  sortRows(); renderKPIs(); renderPipeline(); renderTable();
+}
+function renderKPIs(){
+  const d=FILTERED,total=d.length;
+  const fact=d.filter(r=>/favorable|habilitar|factible/i.test(clean(r.estadoFactibilidad))).length;
+  const ac=d.filter(r=>/favorable|admisible/i.test(clean(r.dictamenAC)+' '+clean(r.estadoAC))).length;
+  const core=d.filter(r=>has(r.acuerdoCoreUrl)||has(r.acuerdoCoreNumero)).length;
+  const res=d.filter(r=>has(r.resolucionUrl)||has(r.resolucionNumero)).length;
+  const ejec=d.filter(r=>/ejecuci[oó]n|en curso|iniciad/i.test(clean(r.estadoEjecucion))||has(r.fechaInicioEjecucion)).length;
+  const alert=d.filter(r=>Array.isArray(r.alertas)&&r.alertas.length).length;
+  const montoCore=d.filter(r=>has(r.acuerdoCoreUrl)||has(r.acuerdoCoreNumero)).reduce((a,r)=>a+parseMoney(r.monto),0);
+  document.getElementById('kpis').innerHTML=`
+    ${kpi('Proyectos visibles',total,'')}
+    ${kpi('Factibilidad favorable',fact,'verde')}
+    ${kpi('A&C favorable',ac,'verde')}
+    ${kpi('Aprobados CORE',core,'morado')}
+    ${kpi('Con resolución',res,'morado')}
+    ${kpi('En ejecución',ejec,'amarillo')}
+    ${kpi('Alertas',alert,alert?'rojo':'')}
+    ${kpi('Monto aprobado CORE',formatMoney(montoCore),'',core+' iniciativas')}`;
+}
+function kpi(label,value,cls,detail=''){return `<div class="kpi ${cls}"><div class="label">${label}</div><div class="value">${value}</div>${detail?`<div class="detail">${detail}</div>`:''}</div>`}
+
+function renderPipeline(){
+  const defs=[
+    ['Factibilidad',r=>has(r.estadoFactibilidad)],['Fact. favorable',r=>/favorable|habilitar|factible/i.test(clean(r.estadoFactibilidad))],
+    ['En A&C',r=>has(r.dictamenAC)||has(r.estadoAC)],['A&C favorable',r=>/favorable|admisible/i.test(clean(r.dictamenAC)+' '+clean(r.estadoAC))],
+    ['Aprobado CORE',r=>has(r.acuerdoCoreUrl)||has(r.acuerdoCoreNumero)],['Con resolución',r=>has(r.resolucionUrl)||has(r.resolucionNumero)],
+    ['En ejecución',r=>has(r.fechaInicioEjecucion)||/ejecuci[oó]n|en curso|iniciad/i.test(clean(r.estadoEjecucion))]
+  ];
+  const max=Math.max(FILTERED.length,1);
+  document.getElementById('pipeline').innerHTML=defs.map(([t,fn])=>{const n=FILTERED.filter(fn).length,p=Math.round(n/max*100);return `<div class="stage"><div class="n">${n}</div><div class="t">${t}</div><div class="bar"><i style="width:${p}%"></i></div></div>`}).join('');
+  document.getElementById('visibleCount').textContent=FILTERED.length+' de '+RAW.length+' proyectos';
+}
+
+function renderTable(){
+  const cols=VIEWS[CURRENT_VIEW];
+  const thead=document.getElementById('thead');
+  thead.innerHTML=cols.map(c=>`<th data-key="${c[0]}" style="min-width:${c[2]}px">${c[1]}${SORT.key===c[0]?(SORT.dir>0?' ▲':' ▼'):''}</th>`).join('');
+  thead.querySelectorAll('th').forEach(th=>th.onclick=()=>{const key=th.dataset.key;if(key.startsWith('_'))return;if(SORT.key===key)SORT.dir*=-1;else{SORT.key=key;SORT.dir=1}sortRows();renderTable()});
+  const tbody=document.getElementById('tbody');
+  if(!FILTERED.length){tbody.innerHTML=`<tr><td colspan="${cols.length}" class="empty">Sin resultados con estos filtros.</td></tr>`;return}
+  tbody.innerHTML=FILTERED.map((r,i)=>`<tr>${cols.map(c=>`<td>${renderCell(c,r,i)}</td>`).join('')}</tr>`).join('');
+  tbody.querySelectorAll('[data-detail]').forEach(b=>b.onclick=()=>openDrawer(FILTERED[Number(b.dataset.detail)]));
+}
+function renderCell(c,r,i){
+  const [key,, ,type]=c,v=r[key];
+  if(type==='money')return formatMoney(parseMoney(v));
+  if(type==='date')return formatDate(v);
+  if(type==='status')return statusPill(v);
+  if(type==='stage')return stagePill(v);
+  if(type==='link')return renderLink(v,'Abrir ↗');
+  if(type==='days'){const n=parseInt(v,10);return isNaN(n)?'—':(n>3?`<span class="pill rojo">${n} días</span>`:`${n} días`)}
+  if(type==='alerts'){const a=Array.isArray(v)?v:[];return a.length?`<span class="alert-dot" title="${escapeAttr(a.join(' · '))}">${a.length}</span>`:'—'}
+  if(type==='alertText'){const a=Array.isArray(v)?v:[];return a.length?a.map(x=>`<div class="pill rojo" style="margin:2px;white-space:normal">${escapeHtml(x)}</div>`).join(''):'—'}
+  if(type==='core')return [clean(r.acuerdoCoreNumero),renderLink(r.acuerdoCoreUrl,'Acuerdo ↗')].filter(Boolean).join('<br>')||'—';
+  if(type==='resolution')return [clean(r.resolucionNumero),renderLink(r.resolucionUrl,'Resolución ↗')].filter(Boolean).join('<br>')||'—';
+  if(type==='detail')return `<button class="detail-btn" data-detail="${i}">Ver</button>`;
+  const text=clean(v)||'—';
+  if(key==='nombreProyecto')return `<div class="project">${escapeHtml(text)}</div>`;
+  if(key==='institucion')return `<div class="org">${escapeHtml(text)}</div>`;
+  return escapeHtml(text);
+}
+
+function statusPill(v){const s=clean(v);if(!s)return '<span class="muted">—</span>';const n=s.toLowerCase();let cls='gris';if(/favorable|habilitar|factible|admisible|terminad|cerrad/.test(n))cls='verde';else if(/observ|espera|pendiente|revisi[oó]n|por iniciar/.test(n))cls='amarillo';else if(/desestim|desfavorable|inadmis|no factible|suspend/.test(n))cls='rojo';else if(/core|resoluci[oó]n|ejecuci[oó]n/.test(n))cls='morado';return `<span class="pill ${cls}" title="${escapeAttr(s)}">${escapeHtml(s)}</span>`}
+function stagePill(v){const s=clean(v);if(!s)return '—';let cls='gris';if(/terminada|resoluci[oó]n|aprobado core|priorizado/.test(s.toLowerCase()))cls='morado';if(/favorable/.test(s.toLowerCase()))cls='verde';if(/no contin/.test(s.toLowerCase()))cls='rojo';if(/ejecuci[oó]n/.test(s.toLowerCase()))cls='amarillo';return `<span class="pill ${cls}">${escapeHtml(s)}</span>`}
+function renderLink(v,label){const s=clean(v);return /^https?:\/\//i.test(s)?`<a class="link" href="${escapeAttr(s)}" target="_blank" rel="noopener">${label}</a>`:''}
+
+function openDrawer(r){
+  const links=[renderLink(r.enlacePautaFactibilidad,'Pauta factibilidad'),renderLink(r.pdfFactibilidad,'PDF factibilidad'),renderLink(r.enlacePautaAC,'Pauta A&C'),renderLink(r.pdfAC,'PDF A&C'),renderLink(r.acuerdoCoreUrl,'Acuerdo CORE'),renderLink(r.resolucionUrl,'Resolución')].filter(Boolean).join(' · ');
+  document.getElementById('drawerContent').innerHTML=`
+    <h2>${escapeHtml(clean(r.nombreProyecto)||'Proyecto')}</h2>
+    <div class="muted">Postulación ${escapeHtml(clean(r.nPostulacion))} · ${escapeHtml(clean(r.institucion))}</div>
+    <div style="margin-top:10px">${stagePill(r.etapa)} ${links}</div>
+    <div class="drawer-grid">
+      ${field('Fondo / categoría',[r.fondo,r.categoria].filter(has).join(' · '))}
+      ${field('Monto',formatMoney(parseMoney(r.monto)))}
+      ${field('Factibilidad',r.estadoFactibilidad)}
+      ${field('Evaluador/a factibilidad',r.evaluadorFactibilidad)}
+      ${field('Dictamen A&C',r.dictamenAC)}
+      ${field('Estado A&C',r.estadoAC)}
+      ${field('Pronunciamiento',r.pronunciamiento)}
+      ${field('Acuerdo CORE',[r.acuerdoCoreNumero,formatDate(r.acuerdoCoreFecha)].filter(x=>x&&x!=='—').join(' · '))}
+      ${field('Resolución',[r.resolucionNumero,formatDate(r.resolucionFecha)].filter(x=>x&&x!=='—').join(' · '))}
+      ${field('Ejecución',[formatDate(r.fechaInicioEjecucion),formatDate(r.fechaTerminoEjecucion),r.estadoEjecucion].filter(x=>x&&x!=='—').join(' · '))}
+      ${field('Alertas',(r.alertas||[]).join('\n')||'Sin alertas',true)}
+      ${field('Resumen',r.resumen||'—',true)}
+      ${field('Comentario',r.comentario||r.comentarioAC||'—',true)}
+    </div>`;
+  document.getElementById('drawerBackdrop').style.display='block';
+}
+function field(k,v,wide=false){return `<div class="field ${wide?'wide':''}"><div class="k">${k}</div><div class="v">${escapeHtml(clean(v)||'—')}</div></div>`}
+function closeDrawer(){document.getElementById('drawerBackdrop').style.display='none'}
+
+function sortRows(){
+  FILTERED.sort((a,b)=>{let av=a[SORT.key],bv=b[SORT.key];if(SORT.key==='monto'){av=parseMoney(av);bv=parseMoney(bv)}else{av=clean(av);bv=clean(bv)}return compare(av,bv)*SORT.dir});
+}
+function compare(a,b){if(typeof a==='number'&&typeof b==='number')return a-b;return String(a).localeCompare(String(b),'es',{numeric:true,sensitivity:'base'})}
+function localeSort(a,b){return String(a).localeCompare(String(b),'es',{sensitivity:'base'})}
+function parseMoney(v){if(typeof v==='number')return v;const s=clean(v).replace(/[^0-9,-]/g,'').replace(/\./g,'').replace(',','.');const n=Number(s);return Number.isFinite(n)?n:0}
+function formatMoney(n){return Number(n||0).toLocaleString('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0})}
+function formatDate(v){if(!has(v))return '—';if(typeof v==='string'&&/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(v))return v;const d=new Date(v);return isNaN(d)?escapeHtml(clean(v)):d.toLocaleDateString('es-CL')}
+function formatDateTime(v){const d=new Date(v);return isNaN(d)?clean(v):d.toLocaleString('es-CL')}
+function clean(v){return v==null?'':String(v).trim()}
+function has(v){return clean(v)!==''}
+function escapeHtml(s){return clean(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function escapeAttr(s){return escapeHtml(s).replace(/'/g,'&#39;')}
+
+['fBuscar','fEtapa','fFondo','fComuna','fEvaluador'].forEach(id=>document.getElementById(id).addEventListener(id==='fBuscar'?'input':'change',applyFilters));
+document.getElementById('clearBtn').onclick=()=>{['fBuscar','fEtapa','fFondo','fComuna','fEvaluador'].forEach(id=>document.getElementById(id).value='');applyFilters()};
+document.getElementById('reloadBtn').onclick=loadData;
+document.getElementById('tabs').onclick=e=>{const b=e.target.closest('.tab');if(!b)return;document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');CURRENT_VIEW=b.dataset.view;SORT={key:'nPostulacion',dir:1};applyFilters()};
+document.getElementById('drawerClose').onclick=closeDrawer;
+document.getElementById('drawerBackdrop').onclick=e=>{if(e.target.id==='drawerBackdrop')closeDrawer()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer()});
+
+loadData();
+</script>
+</body>
+</html>
