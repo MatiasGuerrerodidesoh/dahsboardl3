@@ -151,9 +151,10 @@ const VIEWS = {
   consolidado: [
     ['nPostulacion','N°',55],['nombreProyecto','Proyecto',270],['institucion','Institución',210],
     ['fondo','Fondo',90],['monto','Monto',105,'money'],['etapa','Etapa',150,'stage'],
-    ['estadoFactibilidad','Factibilidad',175,'status'],['dictamenAC','Dictamen A&C',165,'status'],
-    ['acuerdoCoreNumero','Acuerdo CORE',105,'core'],['resolucionNumero','Resolución',105,'resolution'],
-    ['estadoEjecucion','Ejecución',110,'status'],['alertas','⚠',42,'alerts'],['_detail','Detalle',65,'detail']
+    ['estadoFactibilidad','Factibilidad',175,'status'],['dictamenAC','Dictamen A&C',190,'status'],
+    ['acuerdoCore','Acuerdo CORE',90,'yesno'],['acuerdoCoreNumero','N° / enlace',105,'core'],
+    ['resolucionNumero','Resolución',105,'resolution'],['estadoEjecucion','Ejecución',110,'status'],
+    ['alertas','⚠',42,'alerts'],['_detail','Detalle',65,'detail']
   ],
   factibilidad: [
     ['nPostulacion','N°',55],['nombreProyecto','Proyecto',280],['evaluadorFactibilidad','Evaluador/a',130],
@@ -163,13 +164,14 @@ const VIEWS = {
   ],
   ac: [
     ['nPostulacion','N°',55],['nombreProyecto','Proyecto',280],['evaluadorAC','Evaluador/a',130],
-    ['rondaAC','Ronda',55],['dictamenAC','Dictamen',180,'status'],['estadoAC','Estado proyecto',160,'status'],
+    ['rondaAC','Ronda',55],['dictamenAC','Dictamen',190,'status'],['estadoAC','Estado proyecto',170,'status'],
     ['observacionesAbiertasAC','Obs. abiertas',75],['observacionesCerradasAC','Obs. cerradas',75],
     ['fechaEvaluacionAC','Fecha evaluación',105,'date'],['enlacePautaAC','Pauta',65,'link'],['pdfAC','PDF',55,'link'],['_detail','Detalle',65,'detail']
   ],
   core: [
-    ['nPostulacion','N°',55],['nombreProyecto','Proyecto',270],['pronunciamiento','Pronunciamiento',180,'status'],
-    ['acuerdoCoreNumero','N° acuerdo',85],['acuerdoCoreFecha','Fecha acuerdo',100,'date'],['acuerdoCoreUrl','Acuerdo',65,'link'],
+    ['nPostulacion','N°',55],['nombreProyecto','Proyecto',270],['acuerdoCore','Acuerdo CORE',90,'yesno'],
+    ['pronunciamiento','Pronunciamiento',180,'status'],['acuerdoCoreNumero','N° acuerdo',85],
+    ['acuerdoCoreFecha','Fecha acuerdo',100,'date'],['acuerdoCoreUrl','Acuerdo',65,'link'],
     ['resolucionNumero','N° resolución',90],['resolucionFecha','Fecha resolución',105,'date'],['resolucionUrl','Resolución',70,'link'],
     ['fechaInicioEjecucion','Inicio',90,'date'],['fechaTerminoEjecucion','Término',90,'date'],['estadoEjecucion','Ejecución',115,'status'],['_detail','Detalle',65,'detail']
   ],
@@ -220,7 +222,7 @@ async function loadData(){
   try{
     const json = await loadJsonp(API_URL);
     if(json.ok===false) throw new Error(json.error||'Error del Apps Script');
-    RAW=Array.isArray(json.data)?json.data:[];
+    RAW=(Array.isArray(json.data)?json.data:[]).map(normalizeRow);
     hideNotice();
     document.getElementById('updatedAt').textContent='Actualizado: '+formatDateTime(json.updatedAt);
     const s=json.sources||{};
@@ -237,6 +239,93 @@ function setLoading(){
 }
 function showNotice(html){const n=document.getElementById('notice');n.innerHTML=html;n.style.display='block'}
 function hideNotice(){document.getElementById('notice').style.display='none'}
+
+/*
+ * Normalización de negocio
+ * - Acuerdo CORE es la fuente única para priorización CORE.
+ * - Dictamen A&C se toma de campos explícitos y solo usa el estado/etapa como respaldo.
+ */
+function firstValue(...values){
+  for(const value of values){if(has(value))return value}
+  return '';
+}
+function normalizeText(v){
+  return clean(v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+}
+function normalizeYesNo(v){
+  if(v===true||v===1)return 'Sí';
+  if(v===false||v===0)return 'No';
+  const n=normalizeText(v);
+  if(!n)return '';
+  if(/^(si|sí|true|1|x|priorizado|aprobado)$/.test(n))return 'Sí';
+  if(/^(no|false|0)$/.test(n))return 'No';
+  return '';
+}
+function explicitCoreValue(r){
+  return firstValue(
+    r.acuerdoCore,r.acuerdoCORE,r.acuerdoCoreSiNo,r.priorizadoCore,r.priorizadoCORE,
+    r['Acuerdo CORE'],r['Acuerdo core'],r['Priorizado CORE'],r['Priorizado/CORE']
+  );
+}
+function hasCoreEvidence(r){
+  return has(r.acuerdoCoreNumero)||has(r.acuerdoCoreUrl)||has(r.acuerdoCoreFecha);
+}
+function isCoreApproved(r){return normalizeYesNo(r.acuerdoCore)==='Sí'}
+function normalizeDictamen(v){
+  const s=clean(v),n=normalizeText(s);
+  if(!s)return '';
+  if(/desestim|inadmis|no cumple|desfavorable|rechaz/.test(n))return 'DESESTIMADO';
+  if(/con observaciones|observad|subsanacion/.test(n))return 'CON OBSERVACIONES';
+  if(/evaluacion tecnica favorable|favorable|admisible|cumple|aprobado/.test(n))return 'EVALUACIÓN TÉCNICA FAVORABLE';
+  if(/pendiente|sin evaluar|en revision/.test(n))return 'PENDIENTE';
+  return s;
+}
+function isACFavorable(r){
+  return /evaluacion tecnica favorable|favorable|admisible/.test(normalizeText(clean(r.dictamenAC)+' '+clean(r.estadoAC)));
+}
+function normalizeRow(raw){
+  const r={...(raw||{})};
+
+  // Acuerdo CORE: si el API trae una columna explícita, manda esa columna.
+  // Mientras se incorpora al backend, número/URL/fecha sirven como compatibilidad.
+  const explicitCore=normalizeYesNo(explicitCoreValue(r));
+  const coreApproved=explicitCore ? explicitCore==='Sí' : hasCoreEvidence(r);
+  r.acuerdoCore=coreApproved?'Sí':'No';
+  r.priorizadoCore=r.acuerdoCore;
+
+  // Un acuerdo CORE positivo determina la priorización. Etapas posteriores no se degradan.
+  const etapaOriginal=clean(r.etapa);
+  if(coreApproved&&!/resoluci[oó]n|ejecuci[oó]n|terminad|cerrad/i.test(etapaOriginal)){
+    r.etapa='Priorizado/CORE';
+  }
+
+  // Acepta los nombres usados por la planilla Maestro y por versiones previas del API.
+  const estadoFuente=firstValue(
+    r.estadoAC,r.estadoProyectoAC,r.estadoProyecto,r.estadoEvaluacionAC,
+    r['Estado A&C'],r['Estado proyecto'],r['Estado evaluación']
+  );
+  if(!has(r.estadoAC)&&has(estadoFuente))r.estadoAC=estadoFuente;
+
+  const dictamenFuente=firstValue(
+    r.dictamenAC,r.dictamenActual,r.dictamen,r.resultadoAC,
+    r['Dictamen A&C'],r['Dictamen actual'],r['Dictamen'],r['Resultado A&C']
+  );
+  r.dictamenAC=normalizeDictamen(dictamenFuente);
+
+  // Respaldo explícito: estado favorable o una etapa posterior prueban que A&C fue superada.
+  if(!has(r.dictamenAC)){
+    const evidenciaPosterior=[r.estadoAC,r.pronunciamiento,r.etapa].map(normalizeText).join(' ');
+    if(/favorable|admisible/.test(evidenciaPosterior)||coreApproved||has(r.resolucionNumero)||has(r.resolucionUrl)||has(r.fechaInicioEjecucion)){
+      r.dictamenAC='EVALUACIÓN TÉCNICA FAVORABLE';
+    }else if(/observ|subsanacion/.test(evidenciaPosterior)){
+      r.dictamenAC='CON OBSERVACIONES';
+    }else if(/desestim|inadmis|no cumple|desfavorable/.test(evidenciaPosterior)){
+      r.dictamenAC='DESESTIMADO';
+    }
+  }
+
+  return r;
+}
 
 function buildFilters(){
   fillSelect('fEtapa', unique('etapa'),'Todas');
@@ -266,29 +355,29 @@ function applyFilters(){
 function renderKPIs(){
   const d=FILTERED,total=d.length;
   const fact=d.filter(r=>/favorable|habilitar|factible/i.test(clean(r.estadoFactibilidad))).length;
-  const ac=d.filter(r=>/favorable|admisible/i.test(clean(r.dictamenAC)+' '+clean(r.estadoAC))).length;
-  const core=d.filter(r=>has(r.acuerdoCoreUrl)||has(r.acuerdoCoreNumero)).length;
+  const ac=d.filter(isACFavorable).length;
+  const core=d.filter(isCoreApproved).length;
   const res=d.filter(r=>has(r.resolucionUrl)||has(r.resolucionNumero)).length;
   const ejec=d.filter(r=>/ejecuci[oó]n|en curso|iniciad/i.test(clean(r.estadoEjecucion))||has(r.fechaInicioEjecucion)).length;
   const alert=d.filter(r=>Array.isArray(r.alertas)&&r.alertas.length).length;
-  const montoCore=d.filter(r=>has(r.acuerdoCoreUrl)||has(r.acuerdoCoreNumero)).reduce((a,r)=>a+parseMoney(r.monto),0);
+  const montoCore=d.filter(isCoreApproved).reduce((a,r)=>a+parseMoney(r.monto),0);
   document.getElementById('kpis').innerHTML=`
     ${kpi('Proyectos visibles',total,'')}
     ${kpi('Factibilidad favorable',fact,'verde')}
     ${kpi('A&C favorable',ac,'verde')}
-    ${kpi('Aprobados CORE',core,'morado')}
+    ${kpi('Priorizados CORE',core,'morado')}
     ${kpi('Con resolución',res,'morado')}
     ${kpi('En ejecución',ejec,'amarillo')}
     ${kpi('Alertas',alert,alert?'rojo':'')}
-    ${kpi('Monto aprobado CORE',formatMoney(montoCore),'',core+' iniciativas')}`;
+    ${kpi('Monto priorizado CORE',formatMoney(montoCore),'',core+' iniciativas')}`;
 }
 function kpi(label,value,cls,detail=''){return `<div class="kpi ${cls}"><div class="label">${label}</div><div class="value">${value}</div>${detail?`<div class="detail">${detail}</div>`:''}</div>`}
 
 function renderPipeline(){
   const defs=[
     ['Factibilidad',r=>has(r.estadoFactibilidad)],['Fact. favorable',r=>/favorable|habilitar|factible/i.test(clean(r.estadoFactibilidad))],
-    ['En A&C',r=>has(r.dictamenAC)||has(r.estadoAC)],['A&C favorable',r=>/favorable|admisible/i.test(clean(r.dictamenAC)+' '+clean(r.estadoAC))],
-    ['Aprobado CORE',r=>has(r.acuerdoCoreUrl)||has(r.acuerdoCoreNumero)],['Con resolución',r=>has(r.resolucionUrl)||has(r.resolucionNumero)],
+    ['En A&C',r=>has(r.dictamenAC)||has(r.estadoAC)],['A&C favorable',isACFavorable],
+    ['Priorizado CORE',isCoreApproved],['Con resolución',r=>has(r.resolucionUrl)||has(r.resolucionNumero)],
     ['En ejecución',r=>has(r.fechaInicioEjecucion)||/ejecuci[oó]n|en curso|iniciad/i.test(clean(r.estadoEjecucion))]
   ];
   const max=Math.max(FILTERED.length,1);
@@ -312,6 +401,7 @@ function renderCell(c,r,i){
   if(type==='date')return formatDate(v);
   if(type==='status')return statusPill(v);
   if(type==='stage')return stagePill(v);
+  if(type==='yesno')return yesNoPill(v);
   if(type==='link')return renderLink(v,'Abrir ↗');
   if(type==='days'){const n=parseInt(v,10);return isNaN(n)?'—':(n>3?`<span class="pill rojo">${n} días</span>`:`${n} días`)}
   if(type==='alerts'){const a=Array.isArray(v)?v:[];return a.length?`<span class="alert-dot" title="${escapeAttr(a.join(' · '))}">${a.length}</span>`:'—'}
@@ -327,6 +417,7 @@ function renderCell(c,r,i){
 
 function statusPill(v){const s=clean(v);if(!s)return '<span class="muted">—</span>';const n=s.toLowerCase();let cls='gris';if(/favorable|habilitar|factible|admisible|terminad|cerrad/.test(n))cls='verde';else if(/observ|espera|pendiente|revisi[oó]n|por iniciar/.test(n))cls='amarillo';else if(/desestim|desfavorable|inadmis|no factible|suspend/.test(n))cls='rojo';else if(/core|resoluci[oó]n|ejecuci[oó]n/.test(n))cls='morado';return `<span class="pill ${cls}" title="${escapeAttr(s)}">${escapeHtml(s)}</span>`}
 function stagePill(v){const s=clean(v);if(!s)return '—';let cls='gris';if(/terminada|resoluci[oó]n|aprobado core|priorizado/.test(s.toLowerCase()))cls='morado';if(/favorable/.test(s.toLowerCase()))cls='verde';if(/no contin/.test(s.toLowerCase()))cls='rojo';if(/ejecuci[oó]n/.test(s.toLowerCase()))cls='amarillo';return `<span class="pill ${cls}">${escapeHtml(s)}</span>`}
+function yesNoPill(v){const yes=normalizeYesNo(v)==='Sí';return `<span class="pill ${yes?'morado':'gris'}">${yes?'Sí':'No'}</span>`}
 function renderLink(v,label){const s=clean(v);return /^https?:\/\//i.test(s)?`<a class="link" href="${escapeAttr(s)}" target="_blank" rel="noopener">${label}</a>`:''}
 
 function openDrawer(r){
@@ -342,8 +433,9 @@ function openDrawer(r){
       ${field('Evaluador/a factibilidad',r.evaluadorFactibilidad)}
       ${field('Dictamen A&C',r.dictamenAC)}
       ${field('Estado A&C',r.estadoAC)}
+      ${field('Acuerdo CORE',r.acuerdoCore)}
       ${field('Pronunciamiento',r.pronunciamiento)}
-      ${field('Acuerdo CORE',[r.acuerdoCoreNumero,formatDate(r.acuerdoCoreFecha)].filter(x=>x&&x!=='—').join(' · '))}
+      ${field('N° / fecha Acuerdo CORE',[r.acuerdoCoreNumero,formatDate(r.acuerdoCoreFecha)].filter(x=>x&&x!=='—').join(' · '))}
       ${field('Resolución',[r.resolucionNumero,formatDate(r.resolucionFecha)].filter(x=>x&&x!=='—').join(' · '))}
       ${field('Ejecución',[formatDate(r.fechaInicioEjecucion),formatDate(r.fechaTerminoEjecucion),r.estadoEjecucion].filter(x=>x&&x!=='—').join(' · '))}
       ${field('Alertas',(r.alertas||[]).join('\n')||'Sin alertas',true)}
