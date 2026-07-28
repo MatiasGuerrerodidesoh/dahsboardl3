@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#0B2545"/><g fill="none" stroke="#0E7C86" stroke-width="5" stroke-linecap="round"><path d="M30 70V52"/><path d="M42 70V42"/><path d="M54 70V34"/><path d="M66 70V46"/></g><path d="M30 30h40" stroke="#8FB4CE" stroke-width="3" stroke-linecap="round"/></svg></template>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet" />
+<style>
+html,body{margin:0;padding:0}
+body{background:#F4F6FA;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#0E7C86;text-decoration:none}
+a:hover{color:#0B2545;text-decoration:underline}
+@keyframes fndrIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes fndrGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes fndrPulse{0%,100%{opacity:1}50%{opacity:.35}}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#C8D3E0;border-radius:8px;border:3px solid #F4F6FA}
+@media print{
+  body{background:#fff}
+  [data-noprint]{display:none !important}
+  [data-card]{break-inside:avoid;box-shadow:none !important}
+}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#F4F6FA;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#101B2B;font-size:14px;line-height:1.45">
+
+  <header style="background:linear-gradient(118deg,#071B33 0%,#0B2545 42%,#173D66 100%);color:#fff;padding:0;position:relative;overflow:hidden">
+    <div style="position:absolute;inset:0;background:radial-gradient(900px 300px at 88% -40%,rgba(14,124,134,.55),transparent 70%);pointer-events:none"></div>
+    <div style="position:relative;max-width:1640px;margin:0 auto;padding:22px 28px 0;display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start;justify-content:space-between">
+      <div style="min-width:280px">
+        <div style="display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8FB4CE;font-weight:600">
+          <span style="width:22px;height:2px;background:#0E7C86;display:block"></span>
+          Gobierno Regional de Valparaíso · DIDESOH
+        </div>
+        <h1 style="font-family:'Newsreader',Georgia,serif;font-weight:500;font-size:34px;line-height:1.1;margin:10px 0 6px;letter-spacing:-.01em">Dashboard Consolidado FNDR 8% · Línea 3</h1>
+        <div style="font-size:13px;color:#B6CBDD;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+          <span>Factibilidad</span><span style="color:#4F7397">→</span>
+          <span>Admisibilidad y Consistencia</span><span style="color:#4F7397">→</span>
+          <span>Priorización CORE</span><span style="color:#4F7397">→</span>
+          <span>Ejecución</span>
+        </div>
+      </div>
+      <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:10px">
+        <div style="font-size:12px;color:#B6CBDD;font-family:'IBM Plex Mono',monospace">{{ updatedLabel }}</div>
+        <div style="font-size:11px;color:#8FB4CE;font-family:'IBM Plex Mono',monospace">{{ sourcesLabel }}</div>
+        <div data-noprint="1" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+          <button onClick="{{ onReload }}" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.28);border-radius:8px;padding:8px 13px;font:inherit;font-size:12.5px;cursor:pointer;backdrop-filter:blur(4px)" style-hover="background:rgba(255,255,255,.2)">↻ Recargar</button>
+          <button onClick="{{ onExport }}" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.28);border-radius:8px;padding:8px 13px;font:inherit;font-size:12.5px;cursor:pointer" style-hover="background:rgba(255,255,255,.2)">Exportar CSV</button>
+          <button onClick="{{ onPrint }}" style="background:#0E7C86;color:#fff;border:1px solid #0E7C86;border-radius:8px;padding:8px 13px;font:inherit;font-size:12.5px;cursor:pointer;font-weight:500" style-hover="background:#0a666e">Imprimir / PDF</button>
+        </div>
+      </div>
+    </div>
+    <div style="position:relative;max-width:1640px;margin:0 auto;padding:18px 28px 0;display:flex;gap:4px;flex-wrap:wrap">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+        <button onClick="{{ t.onClick }}" style="background:{{ t.bg }};color:{{ t.color }};border:0;border-bottom:3px solid {{ t.line }};padding:11px 18px 12px;font:inherit;font-size:13.5px;font-weight:{{ t.weight }};cursor:pointer;border-radius:9px 9px 0 0;display:flex;align-items:center;gap:9px">
+          {{ t.label }}
+          <span style="background:{{ t.badgeBg }};color:{{ t.badgeColor }};border-radius:20px;padding:1px 8px;font-size:11px;font-family:'IBM Plex Mono',monospace;font-weight:500">{{ t.count }}</span>
+        </button>
+      </sc-for>
+    </div>
+  </header>
+
+  <div data-noprint="1" style="position:sticky;top:0;z-index:12;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid #E2E8F0;box-shadow:0 4px 16px rgba(11,37,69,.05)">
+    <div style="max-width:1640px;margin:0 auto;padding:12px 28px;display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+      <label style="display:flex;flex-direction:column;gap:5px;flex:1 1 260px;min-width:220px">
+        <span style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#6B7A8D;font-weight:600">Buscar</span>
+        <input value="{{ q }}" onInput="{{ onSearch }}" placeholder="N° de postulación, proyecto, institución o RUT" style="border:1px solid #DCE3EC;border-radius:9px;padding:9px 12px;font:inherit;font-size:13px;background:#fff;width:100%;outline:none" style-focus="border-color:#0E7C86;box-shadow:0 0 0 3px rgba(14,124,134,.12)" />
+      </label>
+      <sc-for list="{{ selects }}" as="s" hint-placeholder-count="4">
+        <label style="display:flex;flex-direction:column;gap:5px;min-width:150px">
+          <span style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#6B7A8D;font-weight:600">{{ s.label }}</span>
+          <select value="{{ s.value }}" onChange="{{ s.onChange }}" style="border:1px solid #DCE3EC;border-radius:9px;padding:9px 10px;font:inherit;font-size:13px;background:#fff;min-width:150px;cursor:pointer;outline:none">
+            <sc-for list="{{ s.options }}" as="o" hint-placeholder-count="3">
+              <option value="{{ o.value }}">{{ o.label }}</option>
+            </sc-for>
+          </select>
+        </label>
+      </sc-for>
+      <button onClick="{{ onClear }}" style="background:#0B2545;color:#fff;border:0;border-radius:9px;padding:10px 15px;font:inherit;font-size:12.5px;cursor:pointer;font-weight:500" style-hover="background:#173D66">Limpiar</button>
+      <div style="flex:1"></div>
+      <div style="font-size:12px;color:#6B7A8D;font-family:'IBM Plex Mono',monospace;padding-bottom:8px">{{ visibleLabel }}</div>
+    </div>
+    <sc-if value="{{ hasChips }}" hint-placeholder-val="{{ false }}">
+      <div style="max-width:1640px;margin:0 auto;padding:0 28px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#6B7A8D;font-weight:600">Filtros activos</span>
+        <sc-for list="{{ chips }}" as="c" hint-placeholder-count="2">
+          <button onClick="{{ c.onClear }}" style="background:#EAF3F4;color:#0B4A50;border:1px solid #CBE3E5;border-radius:20px;padding:4px 10px 4px 11px;font:inherit;font-size:12px;cursor:pointer;display:flex;gap:7px;align-items:center" style-hover="background:#dceaec">
+            {{ c.label }}<span style="color:#0E7C86;font-weight:600">✕</span>
+          </button>
+        </sc-for>
+      </div>
+    </sc-if>
+  </div>
+
+  <main style="max-width:1640px;margin:0 auto;padding:24px 28px 56px">
+
+    <sc-if value="{{ notice }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#FFF8E6;border:1px solid #F0DDAE;border-left:4px solid #B77900;border-radius:12px;padding:14px 16px;margin-bottom:20px;font-size:13px;color:#5C4200;display:flex;gap:12px;align-items:flex-start">
+        <span style="font-weight:600">⚠</span>
+        <div>{{ notice }}</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ loading }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px">
+        <sc-for list="{{ skeletons }}" as="s" hint-placeholder-count="8">
+          <div style="background:#fff;border:1px solid #E2E8F0;border-radius:14px;height:104px;animation:fndrPulse 1.4s ease-in-out infinite"></div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showPanorama }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:18px;animation:fndrIn .35s ease both">
+
+        <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(186px,1fr));gap:14px">
+          <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="8">
+            <div data-card="1" style="background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:16px 17px;box-shadow:0 1px 2px rgba(11,37,69,.04),0 10px 26px rgba(11,37,69,.035);position:relative;overflow:hidden">
+              <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:{{ k.color }}"></div>
+              <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#6B7A8D;font-weight:600">{{ k.label }}</div>
+              <div style="font-size:30px;font-weight:600;letter-spacing:-.02em;margin-top:8px;color:{{ k.color }};font-variant-numeric:tabular-nums">{{ k.value }}</div>
+              <div style="font-size:11.5px;color:#6B7A8D;margin-top:3px">{{ k.detail }}</div>
+              <div style="height:4px;border-radius:4px;background:#EDF1F6;margin-top:12px;overflow:hidden">
+                <div style="height:100%;border-radius:4px;background:{{ k.color }};width:{{ k.pct }}%;transform-origin:left;animation:fndrGrow .6s cubic-bezier(.2,.8,.2,1) both"></div>
+              </div>
+            </div>
+          </sc-for>
+        </section>
+
+        <section data-card="1" style="background:#fff;border:1px solid #E2E8F0;border-radius:16px;box-shadow:0 1px 2px rgba(11,37,69,.04),0 10px 26px rgba(11,37,69,.035);overflow:hidden">
+          <div style="padding:16px 20px;border-bottom:1px solid #EDF1F6;display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap">
+            <div>
+              <h2 style="font-family:'Newsreader',Georgia,serif;font-weight:500;font-size:20px;margin:0;color:#0B2545">Embudo del proceso</h2>
+              <div style="font-size:12px;color:#6B7A8D;margin-top:2px">Siete hitos verificables. Haz clic en un hito para filtrar todo el tablero.</div>
+            </div>
+            <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B7A8D;font-weight:600">Conversión acumulada</div>
+          </div>
+          <div style="padding:8px 20px 18px">
+            <sc-for list="{{ funnel }}" as="f" hint-placeholder-count="7">
+              <div onClick="{{ f.onClick }}" style="display:grid;grid-template-columns:210px 1fr 96px;gap:16px;align-items:center;padding:9px 10px;margin:0 -10px;border-radius:10px;cursor:pointer;background:{{ f.rowBg }}" style-hover="background:#F6F9FB">
+                <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                  <span style="width:22px;height:22px;border-radius:50%;background:{{ f.dotBg }};color:{{ f.dotColor }};border:1px solid {{ f.dotBorder }};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;font-family:'IBM Plex Mono',monospace;flex:none">{{ f.step }}</span>
+                  <span style="font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ f.label }}</span>
+                </div>
+                <div style="position:relative;height:26px;background:#F1F5F9;border-radius:7px;overflow:hidden">
+                  <div style="position:absolute;left:0;top:0;bottom:0;width:{{ f.pct }}%;background:linear-gradient(90deg,{{ f.c1 }},{{ f.c2 }});border-radius:7px;transform-origin:left;animation:fndrGrow .7s cubic-bezier(.2,.8,.2,1) both"></div>
+                  <div style="position:absolute;left:12px;top:0;bottom:0;display:flex;align-items:center;font-size:12px;font-weight:600;color:#fff;font-family:'IBM Plex Mono',monospace;text-shadow:0 1px 2px rgba(0,0,0,.25)">{{ f.n }}</div>
+                  <div style="position:absolute;right:10px;top:0;bottom:0;display:flex;align-items:center;font-size:11.5px;color:#6B7A8D;font-family:'IBM Plex Mono',monospace">{{ f.pctLabel }}</div>
+                </div>
+                <div style="font-size:12px;color:{{ f.dropColor }};text-align:right;font-family:'IBM Plex Mono',monospace">{{ f.drop }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:18px">
+
+          <div data-card="1" style="background:#fff;border:1px solid #E2E8F0;border-radius:16px;box-shadow:0 1px 2px rgba(11,37,69,.04),0 10px 26px rgba(11,37,69,.035);padding:18px 20px 20px">
+            <h2 style="font-family:'Newsreader',Georgia,serif;font-weight:500;font-size:19px;margin:0;color:#0B2545">Cartera por fondo</h2>
+            <div style="font-size:12px;color:#6B7A8D;margin:2px 0 14px">Iniciativas y monto solicitado por área temática</div>
+            <div style="display:flex;gap:22px;align-items:center;flex-wrap:wrap">
+              <svg viewBox="0 0 140 140" style="width:150px;height:150px;flex:none">
+                <circle cx="70" cy="70" r="54" fill="none" stroke="#EDF1F6" stroke-width="18"></circle>
+                <sc-for list="{{ fondos }}" as="d" hint-placeholder-count="3">
+                  <circle cx="70" cy="70" r="54" fill="none" stroke="{{ d.color }}" stroke-width="18" stroke-dasharray="{{ d.dash }}" stroke-dashoffset="{{ d.offset }}" transform="rotate(-90 70 70)" stroke-linecap="butt"></circle>
+                </sc-for>
+                <text x="70" y="66" text-anchor="middle" style="font:600 24px 'IBM Plex Sans',sans-serif;fill:#0B2545">{{ totalVisible }}</text>
+                <text x="70" y="83" text-anchor="middle" style="font:500 9px 'IBM Plex Sans',sans-serif;fill:#6B7A8D;letter-spacing:.1em">PROYECTOS</text>
+              </svg>
+              <div style="flex:1 1 170px;display:flex;flex-direction:column;gap:8px;min-width:170px">
+                <sc-for list="{{ fondos }}" as="d" hint-placeholder-count="3">
+                  <button onClick="{{ d.onClick }}" style="display:grid;grid-template-columns:10px 1fr auto;gap:10px;align-items:center;background:none;border:0;padding:5px 7px;margin:0 -7px;border-radius:8px;cursor:pointer;font:inherit;text-align:left" style-hover="background:#F6F9FB">
+                    <span style="width:10px;height:10px;border-radius:3px;background:{{ d.color }}"></span>
+                    <span style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.label }}</span>
+                    <span style="font-size:12px;color:#6B7A8D;font-family:'IBM Plex Mono',monospace">{{ d.n }} · {{ d.montoShort }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+
+          <div data-card="1" style="background:#fff;border:1px solid #E2E8F0;border-radius:16px;box-shadow:0 1px 2px rgba(11,37,69,.04),0 10px 26px rgba(11,37,69,.035);padding:18px 20px 20px">
+            <h2 style="font-family:'Newsreader',Georgia,serif;font-weight:500;font-size:19px;margin:0;color:#0B2545">Estado de ejecución</h2>
+            <div style="font-size:12px;color:#6B7A8D;margin:2px 0 14px">Situación declarada de los proyectos con recursos aprobados</div>
+            <div style="display:flex;gap:22px;align-items:center;flex-wrap:wrap">
+              <svg viewBox="0 0 140 140" style="width:150px;height:150px;flex:none">
+                <circle cx="70" cy="70" r="54" fill="none" stroke="#EDF1F6" stroke-width="18"></circle>
+                <sc-for list="{{ ejecucion }}" as="d" hint-placeholder-count="3">
+                  <circle cx="70" cy="70" r="54" fill="none" stroke="{{ d.color }}" stroke-width="18" stroke-dasharray="{{ d.dash }}" stroke-dashoffset="{{ d.offset }}" transform="rotate(-90 70 70)"></circle>
+                </sc-for>
+                <text x="70" y="66" text-anchor="middle" style="font:600 24px 'IBM Plex Sans',sans-serif;fill:#0B2545">{{ ejecucionTotal }}</text>
+                <text x="70" y="83" text-anchor="middle" style="font:500 9px 'IBM Plex Sans',sans-serif;fill:#6B7A8D;letter-spacing:.1em">CON ACUERDO</text>
+              </svg>
+              <div style="flex:1 1 170px;display:flex;flex-direction:column;gap:8px;min-width:170px">
+                <sc-for list="{{ ejecucion }}" as="d" hint-placeholder-count="3">
+                  <div style="display:grid;grid-template-columns:10px 1fr auto;gap:10px;align-items:center;padding:5px 0">
+                    <span style="width:10px;height:10px;border-radius:3px;background:{{ d.color }}"></span>
+                    <span style="font-size:13px">{{ d.label }}</span>
+                    <span style="font-size:12px;color:#6B7A8D;font-family:'IBM Plex Mono',monospace">{{ d.n }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+
+          <div data-card="1" style="background:#fff;border:1px solid #E2E8F0;border-radius:16px;box-shadow:0 1px 2px rgba(11,37,69,.04),0 10px 26px rgba(11,37,69,.035);padding:18px 20px 20px">
+            <h2 style="font-family:'Newsreader',Georgia,serif;font-weight:500;font-size:19px;margin:0;color:#0B2545">Solicitado vs. priorizado CORE</h2>
+            <div style="font-size:12px;color:#6B7A8D;margin:2px 0 18px">Monto en cartera y monto con acuerdo del Consejo Regional</div>
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <sc-for list="{{ montoBars }}" as="m" hint-placeholder-count="2">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:6px">
+                    <span style="font-size:12.5px;font-weight:500;color:{{ m.color }}">{{ m.label }}</span>
+                    <span style="font-size:15px;font-weight:600;font-family:'IBM Plex Mono',monospace;color:#0B2545">{{ m.value }}</span>
+                  </div>
+                  <div style="height:14px;background:#F1F5F9;border-radius:7px;overflow:hidden">
+                    <div style="height:100%;width:{{ m.pct }}%;background:{{ m.color }};border-radius:7px;transform-origin:left;animation:fndrGrow .7s cubic-bezier(.2,.8,.2,1) both"></div>
+                  </div>
+                  <div style="font-size:11.5px;color:#6B7A8D;margin-top:5px">{{ m.detail }}</div>
+                </div>
+              </sc-for>
+              <div style="border-top:1px dashed #E2E8F0;padding-top:14px;display:flex;justify-content:space-between;align-items:baseline">
+                <span style="font-size:12px;color:#6B7A8D">Tasa de priorización</span>
+                <span style="font-family:'Newsreader',Georgia,serif;font-size:26px;color:#5B2A86">{{ tasaCore }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div data-card="1" style="background:#fff;border:1px solid #E2E8F0;border-radius:16px;box-shadow:0 1px 2px rgba(11,37,69,.04),0 10px 26px rgba(11,37,69,.035);padding:18px 20px 20px">
+            <h2 style="font-family:'Newsreader',Georgia,serif;font-weight:500;font-size:19px;margin:0;color:#0B2545">Carga por evaluador/a</h2>
+            <div style="font-size:12px;color:#6B7A8D;margin:2px 0 14px">Expedientes asignados en Factibilidad y en A&amp;C</div>
+            <div style="display:flex;gap:16px;margin-bottom:12px">
+              <span style="display:flex;gap:6px;align-items:center;font-size:11.5px;color:#6B7A8D"><span style="width:10px;height:10px;border-radius:3px;background:#315D88"></span>Factibilidad</span>
+              <span style="display:flex;gap:6px;align-items:center;font-size:11.5px;color:#6B7A8D"><span style="width:10px;height:10px;border-radius:3px;background:#0E7C86"></span>A&amp;C</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;max-height:260px;overflow:auto">
+              <sc-for list="{{ evaluadores }}" as="e" hint-placeholder-count="4">
+                <button onClick="{{ e.onClick }}" style="background:none;border:0;padding:4px 7px;margin:0 -7px;border-radius:8px;cursor:pointer;font:inherit;text-align:left;display:block;width:100%" style-hover="background:#F6F9FB">
+                  <div style="display:flex;justify-content:space-between;gap:10px;margin-bottom:5px">
+                    <span style="font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.name }}</span>
+                    <span style="font-size:11.5px;color:#6B7A8D;font-family:'IBM Plex Mono',monospace;flex:none">{{ e.total }}</span>
+                  </div>
+                  <div style="display:flex;gap:3px;height:10px">
+                    <div style="width:{{ e.wf }}%;background:#315D88;border-radius:3px;min-width:0"></div>
+                    <div style="width:{{ e.wac }}%;background:#0E7C86;border-radius:3px;min-width:0"></div>
+                  </div>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div data-card="1" style="background:#fff;border:1px solid #E2E8F0;border-radius:16px;box-shadow:0 1px 2px rgba(11,37,69,.04),0 10px 26px rgba(11,37,69,.035);padding:18px 20px 20px;grid-column:span 2;min-width:0">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap">
+              <div>
+                <h2 style="font-family:'Newsreader',Georgia,serif;font-weight:500;font-size:19px;margin:0;color:#0B2545">Monto solicitado por comuna</h2>
+                <div style="font-size:12px;color:#6B7A8D;margin-top:2px">Distribución territorial de la cartera visible</div>
+              </div>
+              <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B7A8D;font-weight:600">Clic para filtrar</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:9px;margin-top:16px">
+              <sc-for list="{{ comunas }}" as="c" hint-placeholder-count="6">
+                <button onClick="{{ c.onClick }}" style="display:grid;grid-template-columns:150px 1fr 130px;gap:14px;align-items:center;background:none;border:0;padding:4px 7px;margin:0 -7px;border-radius:8px;cursor:pointer;font:inherit;text-align:left" style-hover="background:#F6F9FB">
+                  <span style="font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span>
+                  <span style="height:18px;background:#F1F5F9;border-radius:6px;display:block;position:relative;overflow:hidden">
+                    <span style="position:absolute;left:0;top:0;bottom:0;width:{{ c.pct }}%;background:linear-gradient(90deg,#0B2545,#315D88);border-radius:6px;display:block;transform-origin:left;animation:fndrGrow .7s cubic-bezier(.2,.8,.2,1) both"></span>
+                  </span>
+                  <span style="font-size:12px;color:#3C4B5C;font-family:'IBM Plex Mono',monospace;text-align:right">{{ c.monto }} · {{ c.n }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+
+        </section>
+
+        <section data-card="1" style="background:#fff;border:1px solid #E2E8F0;border-radius:16px;box-shadow:0 1px 2px rgba(11,37,69,.04),0 10px 26px rgba(11,37,69,.035);overflow:hidden">
+          <div style="padding:16px 20px;border-bottom:1px solid #EDF1F6;display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap">
+            <div>
+              <h2 style="font-family:'Newsreader',Georgia,serif;font-weight:500;font-size:20px;margin:0;color:#0B2545">Calendario de ejecución</h2>
+              <div style="font-size:12px;color:#6B7A8D;margin-top:2px">{{ ganttSubtitle }}</div>
+            </div>
+            <div style="display:flex;gap:14px;flex-wrap:wrap">
+              <span style="display:flex;gap:6px;align-items:center;font-size:11.5px;color:#6B7A8D"><span style="width:10px;height:10px;border-radius:3px;background:#0E7C86"></span>En ejecución</span>
+              <span style="display:flex;gap:6px;align-items:center;font-size:11.5px;color:#6B7A8D"><span style="width:10px;height:10px;border-radius:3px;background:#B77900"></span>Por iniciar</span>
+              <span style="display:flex;gap:6px;align-items:center;font-size:11.5px;color:#6B7A8D"><span style="width:10px;height:10px;border-radius:3px;background:#546E7A"></span>Terminado</span>
+            </div>
+          </div>
+          <div style="padding:14px 20px 20px;overflow-x:auto">
+            <div style="min-width:720px">
+              <div style="display:grid;grid-template-columns:250px 1fr;gap:14px;align-items:end;padding-bottom:8px;border-bottom:1px solid #EDF1F6">
+                <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#6B7A8D;font-weight:600">Proyecto</div>
+                <div style="display:flex;position:relative;height:16px">
+                  <sc-for list="{{ ganttMonths }}" as="m" hint-placeholder-count="6">
+                    <div style="flex:1;font-size:10.5px;color:#6B7A8D;text-align:center;font-family:'IBM Plex Mono',monospace;border-left:1px solid #EDF1F6">{{ m.label }}</div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;max-height:340px;overflow-y:auto">
+                <sc-for list="{{ ganttRows }}" as="g" hint-placeholder-count="6">
+                  <div onClick="{{ g.onClick }}" style="display:grid;grid-template-columns:250px 1fr;gap:14px;align-items:center;padding:7px 0;border-bottom:1px solid #F4F7FA;cursor:pointer" style-hover="background:#F8FAFC">
+                    <div style="min-width:0">
+                      <div style="font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ g.name }}</div>
+                      <div style="font-size:11px;color:#6B7A8D;font-family:'IBM Plex Mono',monospace">{{ g.range }}</div>
+                    </div>
+                    <div style="position:relative;height:20px;background:#F7FAFC;border-radius:6px">
+                      <div style="position:absolute;left:{{ g.hoyX }}%;top:-4px;bottom:-4px;width:1px;background:#C62828;opacity:.45"></div>
+                      <div style="position:absolute;left:{{ g.x }}%;width:{{ g.w }}%;top:3px;bottom:3px;background:{{ g.color }};border-radius:5px;min-width:6px"></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showTabla }}" hint-placeholder-val="{{ false }}">
+      <section data-card="1" style="background:#fff;border:1px solid #E2E8F0;border-radius:16px;box-shadow:0 1px 2px rgba(11,37,69,.04),0 10px 26px rgba(11,37,69,.035);overflow:hidden;animation:fndrIn .3s ease both">
+        <div style="padding:16px 20px;border-bottom:1px solid #EDF1F6;display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap">
+          <div>
+            <h2 style="font-family:'Newsreader',Georgia,serif;font-weight:500;font-size:20px;margin:0;color:#0B2545">Proyectos</h2>
+            <div style="font-size:12px;color:#6B7A8D;margin-top:2px">Cada barra muestra los siete hitos del proceso. Clic en la fila para ver el expediente.</div>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:#6B7A8D">
+            <span style="display:flex;gap:6px;align-items:center"><span style="width:14px;height:6px;border-radius:3px;background:#0E7C86"></span>Cumplido</span>
+            <span style="display:flex;gap:6px;align-items:center"><span style="width:14px;height:6px;border-radius:3px;background:#BFD8DC"></span>Registrado fuera de secuencia</span>
+            <span style="display:flex;gap:6px;align-items:center"><span style="width:14px;height:6px;border-radius:3px;background:#E2E8F0"></span>Pendiente</span>
+            <span style="display:flex;gap:6px;align-items:center"><span style="width:14px;height:6px;border-radius:3px;background:#C62828"></span>Detenido</span>
+          </div>
+        </div>
+        <div style="overflow:auto;max-height:74vh">
+          <table style="border-collapse:collapse;width:100%;font-size:13px;min-width:1560px">
+            <thead>
+              <tr>
+                <sc-for list="{{ columns }}" as="c" hint-placeholder-count="10">
+                  <th onClick="{{ c.onSort }}" style="position:sticky;top:0;background:#0B2545;color:#fff;text-align:{{ c.align }};padding:11px 12px;font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:600;white-space:nowrap;cursor:pointer;z-index:2;min-width:{{ c.w }}px">{{ c.label }}{{ c.arrow }}</th>
+                </sc-for>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ rows }}" as="r" hint-placeholder-count="8">
+                <tr onClick="{{ r.onOpen }}" style="cursor:pointer;background:{{ r.rowBg }}" style-hover="background:#F4F9FB">
+                  <td style="padding:11px 12px;border-bottom:1px solid #EDF1F6;font-family:'IBM Plex Mono',monospace;color:#6B7A8D;vertical-align:top">{{ r.n }}</td>
+                  <td style="padding:11px 12px;border-bottom:1px solid #EDF1F6;vertical-align:top;max-width:330px">
+                    <div style="font-weight:500;color:#101B2B;line-height:1.3">{{ r.proyecto }}</div>
+                    <div style="font-size:11.5px;color:#6B7A8D;margin-top:3px">{{ r.institucion }}</div>
+                  </td>
+                  <td style="padding:11px 12px;border-bottom:1px solid #EDF1F6;vertical-align:top">
+                    <span style="display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;background:{{ r.fondoBg }};color:{{ r.fondoColor }}">{{ r.fondo }}</span>
+                    <div style="font-size:11px;color:#6B7A8D;margin-top:4px">{{ r.comuna }}</div>
+                  </td>
+                  <td style="padding:11px 12px;border-bottom:1px solid #EDF1F6;text-align:right;font-family:'IBM Plex Mono',monospace;vertical-align:top;white-space:nowrap">{{ r.monto }}</td>
+                  <td style="padding:11px 12px;border-bottom:1px solid #EDF1F6;vertical-align:top;min-width:200px">
+                    <div style="display:flex;gap:3px;align-items:center">
+                      <sc-for list="{{ r.hitos }}" as="h" hint-placeholder-count="7">
+                        <span title="{{ h.title }}" style="height:7px;flex:1;border-radius:4px;background:{{ h.color }}"></span>
+                      </sc-for>
+                    </div>
+                    <div style="font-size:11px;color:#6B7A8D;margin-top:5px;font-family:'IBM Plex Mono',monospace">{{ r.hitoLabel }}</div>
+                  </td>
+                  <td style="padding:11px 12px;border-bottom:1px solid #EDF1F6;vertical-align:top;max-width:185px">
+                    <span style="display:inline-block;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;line-height:1.35;background:{{ r.factBg }};color:{{ r.factColor }}">{{ r.fact }}</span>
+                    <div style="font-size:11px;color:#6B7A8D;margin-top:5px">{{ r.factSub }}</div>
+                  </td>
+                  <td style="padding:11px 12px;border-bottom:1px solid #EDF1F6;vertical-align:top;max-width:200px">
+                    <span style="display:inline-block;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;line-height:1.35;background:{{ r.acBg }};color:{{ r.acColor }}">{{ r.ac }}</span>
+                    <div style="font-size:11px;color:#6B7A8D;margin-top:5px">{{ r.acSub }}</div>
+                  </td>
+                  <td style="padding:11px 12px;border-bottom:1px solid #EDF1F6;vertical-align:top;max-width:160px">
+                    <span style="display:inline-block;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;line-height:1.35;background:{{ r.prioBg }};color:{{ r.prioColor }}">{{ r.prio }}</span>
+                    <div style="font-size:11px;color:#6B7A8D;margin-top:5px">{{ r.prioSub }}</div>
+                  </td>
+                  <td style="padding:11px 12px;border-bottom:1px solid #EDF1F6;vertical-align:top">
+                    <span style="display:inline-block;padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:500;background:{{ r.estadoBg }};color:{{ r.estadoColor }};white-space:nowrap">{{ r.estado }}</span>
+                    <div style="font-size:11px;margin-top:5px;font-family:'IBM Plex Mono',monospace;color:{{ r.proxColor }}">{{ r.prox }}</div>
+                  </td>
+                  <td style="padding:11px 12px;border-bottom:1px solid #EDF1F6;text-align:center;vertical-align:top">{{ r.alertBadge }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <sc-if value="{{ emptyRows }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:60px 20px;text-align:center;color:#6B7A8D;font-size:13px">Sin resultados con estos filtros.</div>
+          </sc-if>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ showAlertas }}" hint-placeholder-val="{{ false }}">
+      <section style="display:flex;flex-direction:column;gap:14px;animation:fndrIn .3s ease both">
+        <sc-if value="{{ noAlertas }}" hint-placeholder-val="{{ false }}">
+          <div data-card="1" style="background:#fff;border:1px solid #E2E8F0;border-radius:16px;padding:60px 20px;text-align:center;color:#6B7A8D;font-size:13px">Sin alertas activas en la selección actual.</div>
+        </sc-if>
+        <sc-for list="{{ alertCards }}" as="a" hint-placeholder-count="4">
+          <div data-card="1" onClick="{{ a.onOpen }}" style="background:#fff;border:1px solid #E2E8F0;border-left:4px solid #C62828;border-radius:14px;padding:16px 18px;box-shadow:0 1px 2px rgba(11,37,69,.04);cursor:pointer;display:grid;grid-template-columns:1fr 320px;gap:20px" style-hover="border-color:#C62828">
+            <div style="min-width:0">
+              <div style="display:flex;gap:10px;align-items:baseline">
+                <span style="font-family:'IBM Plex Mono',monospace;color:#6B7A8D;font-size:12px">{{ a.n }}</span>
+                <span style="font-weight:600;font-size:14.5px">{{ a.proyecto }}</span>
+              </div>
+              <div style="font-size:12px;color:#6B7A8D;margin-top:3px">{{ a.institucion }} · {{ a.estado }}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <sc-for list="{{ a.items }}" as="i" hint-placeholder-count="2">
+                <div style="background:#FFF1F1;color:#8E1F1F;border:1px solid #F4D3D3;border-radius:8px;padding:6px 10px;font-size:12px">{{ i.text }}</div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </section>
+    </sc-if>
+
+    <div style="text-align:center;color:#8B96A3;font-size:11.5px;padding:34px 0 0;letter-spacing:.02em">
+      DIDESOH · División de Desarrollo Social y Humano · Gobierno Regional de Valparaíso — cruce por N° de postulación
+    </div>
+  </main>
+
+  <sc-if value="{{ sel }}" hint-placeholder-val="{{ false }}">
+    <div data-noprint="1" onClick="{{ onCloseBackdrop }}" style="position:fixed;inset:0;background:rgba(7,27,51,.45);backdrop-filter:blur(2px);z-index:30;display:flex;justify-content:flex-end">
+      <aside style="background:#fff;width:min(760px,96vw);height:100%;overflow:auto;box-shadow:-8px 0 40px rgba(7,27,51,.28);animation:fndrIn .25s ease both">
+        <div style="background:linear-gradient(118deg,#071B33,#12345C);color:#fff;padding:22px 26px 20px;position:sticky;top:0;z-index:2">
+          <button onClick="{{ onClose }}" style="position:absolute;right:18px;top:18px;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.12);color:#fff;font-size:16px;cursor:pointer">✕</button>
+          <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8FB4CE;font-weight:600">Postulación {{ sel.nPostulacion }}</div>
+          <h2 style="font-family:'Newsreader',Georgia,serif;font-weight:500;font-size:25px;margin:8px 44px 6px 0;line-height:1.2">{{ sel.nombreProyecto }}</h2>
+          <div style="font-size:13px;color:#B6CBDD">{{ sel.institucion }}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+            <span style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:4px 11px;font-size:12px">{{ detEstado }}</span>
+            <span style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:4px 11px;font-size:12px;font-family:'IBM Plex Mono',monospace">{{ detMonto }}</span>
+            <span style="background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:4px 11px;font-size:12px">{{ detFondo }}</span>
+          </div>
+        </div>
+        <div style="padding:22px 26px 40px">
+          <div style="font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:#6B7A8D;font-weight:600;margin-bottom:12px">Ruta del expediente</div>
+          <div style="display:flex;gap:6px;margin-bottom:26px">
+            <sc-for list="{{ detHitos }}" as="h" hint-placeholder-count="7">
+              <div style="flex:1;min-width:0">
+                <div style="height:8px;border-radius:5px;background:{{ h.color }}"></div>
+                <div style="font-size:10px;color:{{ h.textColor }};margin-top:7px;line-height:1.25">{{ h.title }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ detLinks.length }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px">
+              <sc-for list="{{ detLinks }}" as="l" hint-placeholder-count="2">
+                <a href="{{ l.url }}" target="_blank" rel="noopener" style="border:1px solid #CBE3E5;background:#F2F9FA;color:#0B4A50;border-radius:9px;padding:8px 13px;font-size:12.5px;font-weight:500;text-decoration:none">{{ l.label }} ↗</a>
+              </sc-for>
+            </div>
+          </sc-if>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+            <sc-for list="{{ detFields }}" as="f" hint-placeholder-count="8">
+              <div style="border:1px solid #E7ECF2;border-radius:11px;padding:12px 13px;background:{{ f.bg }};grid-column:{{ f.span }}">
+                <div style="font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#6B7A8D;font-weight:600">{{ f.k }}</div>
+                <div style="font-size:13px;margin-top:5px;white-space:pre-wrap;word-break:break-word;color:#1B2838">{{ f.v }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;apiUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Datos&quot;},&quot;vistaInicial&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;panorama&quot;,&quot;proyectos&quot;,&quot;alertas&quot;],&quot;default&quot;:&quot;panorama&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Datos&quot;},&quot;mostrarMontos&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Presentación&quot;}}">
+class Component extends DCLogic {
+  state = {
+    raw: [], loading: true, notice: '', updatedAt: '', sources: null, demo: false,
+    view: 'panorama', q: '', etapa: '', fondo: '', comuna: '', evaluador: '', hito: '', plazo: '',
+    sel: null, sortKey: 'nPostulacion', sortDir: 1
+  };
+
+  MILESTONES = [
+    { k: 'f', t: 'Factibilidad', test: r => this.has(r.estadoFactibilidad) },
+    { k: 'ff', t: 'Fact. favorable', test: r => /favorable|habilitar|factible/i.test(this.clean(r.estadoFactibilidad)) },
+    { k: 'ac', t: 'En A&C', test: r => this.has(r.dictamenAC) || this.has(r.estadoAC) },
+    { k: 'acf', t: 'A&C favorable', test: r => this.acFav(r) },
+    { k: 'core', t: 'Priorizado CORE', test: r => this.coreOk(r) },
+    { k: 'res', t: 'Con resolución', test: r => this.has(r.resolucionUrl) || this.has(r.resolucionNumero) },
+    { k: 'eje', t: 'En ejecución', test: r => this.enEjecucion(r) }
+  ];
+
+  FONDO_COLORS = ['#0B2545', '#0E7C86', '#315D88', '#B77900', '#5B2A86', '#2E7D32', '#8C5A2B', '#6B7A8D'];
+
+  DEMO = [
+    { nPostulacion: '1', nombreProyecto: 'Talento juvenil regional en la capital mundial de la música, Viena 2026', institucion: 'Fundación Jóvenes Músicos Chile', comuna: 'Viña del Mar', fondo: 'Cultura', categoria: 'Caso Emblemático', monto: 30920000, etapa: 'Priorización CORE', estadoFactibilidad: 'Favorable', evaluadorFactibilidad: 'C. Molina', dictamenAC: 'Evaluación técnica favorable', estadoAC: 'Favorable', evaluadorAC: 'P. Salas', rondaAC: '2', observacionesAbiertasAC: 0, observacionesCerradasAC: 5, fechaEvaluacionAC: '2026-06-12', acuerdoCore: 'Sí', pronunciamiento: 'Aprobado', acuerdoCoreNumero: '184/2026', acuerdoCoreFecha: '2026-07-02', resolucionNumero: 'RE 1204', resolucionFecha: '2026-07-15', fechaInicioEjecucion: '7/07/2026', fechaTerminoEjecucion: '30/07/2026', estadoEjecucion: 'En ejecución', alertas: [] },
+    { nPostulacion: '2', nombreProyecto: 'Semillero de campeones: renace Nahuel Rowing, Placilla', institucion: 'Club Deportivo Social Nahuel Rowing', comuna: 'Valparaíso', fondo: 'Deporte', categoria: 'Caso Excepcional', monto: 46333000, etapa: 'Admisibilidad y Consistencia', estadoFactibilidad: 'Favorable', evaluadorFactibilidad: 'C. Molina', dictamenAC: 'Con observaciones', estadoAC: 'En observaciones', evaluadorAC: 'M. Toro', rondaAC: '1', observacionesAbiertasAC: 4, observacionesCerradasAC: 1, fechaEvaluacionAC: '2026-06-28', acuerdoCore: 'No', estadoEjecucion: '', fechaInicioEjecucion: '30/06/2026', fechaTerminoEjecucion: '21/12/2026', alertas: ['4 observaciones abiertas hace más de 15 días'] },
+    { nPostulacion: '3', nombreProyecto: 'Sportiva Italiana multicampeonas: básquetbol femenino 2026', institucion: 'Sociedad Sportiva Italiana', comuna: 'Valparaíso', fondo: 'Deporte', categoria: 'Caso Emblemático', monto: 39136800, etapa: 'Priorización CORE', estadoFactibilidad: 'Favorable', evaluadorFactibilidad: 'R. Pérez', dictamenAC: 'Evaluación técnica favorable', estadoAC: 'Favorable', evaluadorAC: 'M. Toro', rondaAC: '1', observacionesAbiertasAC: 0, observacionesCerradasAC: 3, fechaEvaluacionAC: '2026-06-20', acuerdoCore: 'Sí', pronunciamiento: 'Aprobado', acuerdoCoreNumero: '186/2026', acuerdoCoreFecha: '2026-07-02', resolucionNumero: '', fechaInicioEjecucion: '15/06/2026', fechaTerminoEjecucion: '30/12/2026', estadoEjecucion: 'Por iniciar', alertas: ['Acuerdo CORE sin resolución asociada'] },
+    { nPostulacion: '4', nombreProyecto: 'Festival Vilanova España', institucion: 'ONG Vivir Consentidos', comuna: 'Valparaíso', fondo: 'Cultura', categoria: 'Caso Emblemático', monto: 50000000, etapa: 'Factibilidad', estadoFactibilidad: '', evaluadorFactibilidad: '', dictamenAC: '', estadoAC: '', acuerdoCore: 'No', estadoEjecucion: '', alertas: ['Ficha incompleta: sin fecha de recepción ni código de postulación'] },
+    { nPostulacion: '5', nombreProyecto: 'Apoyo 15° Festival de Cine Ojo de Pescado', institucion: 'Corporación Cultural Ojo de Pescado', comuna: 'Valparaíso', fondo: 'Cultura', categoria: 'Caso Emblemático', monto: 33619700, etapa: 'Ejecución', estadoFactibilidad: 'Favorable', evaluadorFactibilidad: 'R. Pérez', dictamenAC: 'Evaluación técnica favorable', estadoAC: 'Favorable', evaluadorAC: 'P. Salas', rondaAC: '1', observacionesAbiertasAC: 0, observacionesCerradasAC: 2, fechaEvaluacionAC: '2026-06-05', acuerdoCore: 'Sí', pronunciamiento: 'Aprobado', acuerdoCoreNumero: '171/2026', acuerdoCoreFecha: '2026-06-18', resolucionNumero: 'RE 1150', resolucionFecha: '2026-06-30', fechaInicioEjecucion: '1/07/2026', fechaTerminoEjecucion: '31/10/2026', estadoEjecucion: 'En ejecución', alertas: [] },
+    { nPostulacion: '6', nombreProyecto: 'Valparaíso rumbo al torneo First Lego League Korea International 2026', institucion: 'Corporación Educacional Instituto del Mar', comuna: 'Valparaíso', fondo: 'Educación', categoria: 'Caso Emblemático', monto: 41420541, etapa: 'Admisibilidad y Consistencia', estadoFactibilidad: 'Favorable con observaciones', evaluadorFactibilidad: 'C. Molina', dictamenAC: 'En revisión', estadoAC: 'En revisión', evaluadorAC: 'P. Salas', rondaAC: '1', observacionesAbiertasAC: 2, observacionesCerradasAC: 0, fechaEvaluacionAC: '2026-07-10', acuerdoCore: 'No', estadoEjecucion: '', fechaInicioEjecucion: '1/09/2026', fechaTerminoEjecucion: '30/11/2026', alertas: [] },
+    { nPostulacion: '7', nombreProyecto: 'Escuela de invierno para monitores deportivos comunales', institucion: 'Corporación Municipal de Quillota', comuna: 'Quillota', fondo: 'Deporte', categoria: 'Estándar', monto: 18400000, etapa: 'No continúa', estadoFactibilidad: 'No factible', evaluadorFactibilidad: 'R. Pérez', dictamenAC: '', estadoAC: '', acuerdoCore: 'No', estadoEjecucion: '', alertas: ['Desestimado en factibilidad: sin respaldo de dominio del recinto'] },
+    { nPostulacion: '8', nombreProyecto: 'Circuito regional de orquestas escolares', institucion: 'Fundación Sonidos del Aconcagua', comuna: 'San Felipe', fondo: 'Cultura', categoria: 'Estándar', monto: 27750000, etapa: 'Ejecución', estadoFactibilidad: 'Favorable', evaluadorFactibilidad: 'C. Molina', dictamenAC: 'Evaluación técnica favorable', estadoAC: 'Favorable', evaluadorAC: 'M. Toro', rondaAC: '1', observacionesAbiertasAC: 0, observacionesCerradasAC: 1, fechaEvaluacionAC: '2026-05-22', acuerdoCore: 'Sí', pronunciamiento: 'Aprobado', acuerdoCoreNumero: '160/2026', acuerdoCoreFecha: '2026-06-04', resolucionNumero: 'RE 1098', resolucionFecha: '2026-06-20', fechaInicioEjecucion: '1/06/2026', fechaTerminoEjecucion: '30/09/2026', estadoEjecucion: 'Terminado', alertas: [] },
+    { nPostulacion: '9', nombreProyecto: 'Rescate patrimonial del muelle de Papudo', institucion: 'Agrupación Cultural Costa Norte', comuna: 'Papudo', fondo: 'Patrimonio', categoria: 'Caso Emblemático', monto: 22300000, etapa: 'Factibilidad', estadoFactibilidad: 'En revisión', evaluadorFactibilidad: 'R. Pérez', dictamenAC: '', estadoAC: '', acuerdoCore: 'No', estadoEjecucion: '', alertas: [] }
+  ];
+
+  PLAZOS = [
+    { value: '', label: 'Cualquier plazo' },
+    { value: 'curso', label: 'En curso hoy', test: r => { if (this.cerrado(r) || !this.enEjecucion(r)) return false; const a = this.dias(r.fechaInicioEjecucion), b = this.dias(r.fechaTerminoEjecucion); return (a === null || a <= 0) && (b === null || b >= 0); } },
+    { value: 'inicia7', label: 'Inicia en 7 días', test: r => { const a = this.dias(r.fechaInicioEjecucion); return a !== null && a >= 0 && a <= 7; } },
+    { value: 'inicia30', label: 'Inicia en 30 días', test: r => { const a = this.dias(r.fechaInicioEjecucion); return a !== null && a >= 0 && a <= 30; } },
+    { value: 'termina15', label: 'Termina en 15 días', test: r => { const b = this.dias(r.fechaTerminoEjecucion); return b !== null && b >= 0 && b <= 15; } },
+    { value: 'termina30', label: 'Termina en 30 días', test: r => { const b = this.dias(r.fechaTerminoEjecucion); return b !== null && b >= 0 && b <= 30; } },
+    { value: 'vencido', label: 'Plazo vencido sin cierre', test: r => { const b = this.dias(r.fechaTerminoEjecucion); return b !== null && b < 0 && !this.cerrado(r); } },
+    { value: 'sinfechas', label: 'Sin fechas informadas', test: r => this.dias(r.fechaInicioEjecucion) === null && this.dias(r.fechaTerminoEjecucion) === null }
+  ];
+
+  clean(v) { return v == null ? '' : String(v).trim(); }
+  has(v) { return this.clean(v) !== ''; }
+  norm(v) { return this.clean(v).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
+  yesNo(v) { const n = this.norm(v); if (['si', 'true', '1', 'x'].includes(n)) return 'Sí'; if (['no', 'false', '0'].includes(n)) return 'No'; return ''; }
+  coreOk(r) { return this.yesNo(r.acuerdoCore) === 'Sí'; }
+  acFav(r) { return this.norm(r.dictamenAC) === 'evaluacion tecnica favorable' && this.norm(r.estadoAC) === 'favorable'; }
+  stopped(r) { return /desestim|desfavorable|inadmis|no factible|no contin|rechaz/.test(this.norm([r.estadoFactibilidad, r.estadoAC, r.dictamenAC, r.etapa].join(' '))); }
+  parseMoney(v) { if (typeof v === 'number') return v; const s = this.clean(v).replace(/[^0-9,-]/g, '').replace(/\./g, '').replace(',', '.'); const n = Number(s); return Number.isFinite(n) ? n : 0; }
+  money(n) { return Number(n || 0).toLocaleString('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }); }
+  short(n) {
+    const v = Number(n || 0);
+    if (v >= 1e9) return '$' + (v / 1e9).toLocaleString('es-CL', { maximumFractionDigits: 1 }) + 'MM';
+    if (v >= 1e6) return '$' + (v / 1e6).toLocaleString('es-CL', { maximumFractionDigits: 1 }) + 'M';
+    if (v >= 1e3) return '$' + Math.round(v / 1e3) + 'k';
+    return '$' + v;
+  }
+  parseDate(v) {
+    if (!this.has(v)) return null;
+    const s = this.clean(v);
+    const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (m) return new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+    const d = new Date(s);
+    return isNaN(d) ? null : d;
+  }
+  fmtDate(v) { const d = this.parseDate(v); return d ? d.toLocaleDateString('es-CL') : '—'; }
+
+  dias(v) {
+    const d = this.parseDate(v);
+    if (!d) return null;
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    d.setHours(0, 0, 0, 0);
+    return Math.round((d - hoy) / 86400000);
+  }
+
+  cerrado(r) { return /terminad|cerrad|finaliz/i.test(this.clean(r.estadoEjecucion)); }
+
+  /* Proximidad: sólo se habla de vencimiento cuando la ejecución está declarada;
+     si no, las fechas son las planificadas en la postulación. */
+  proximidad(r) {
+    const a = this.dias(r.fechaInicioEjecucion), b = this.dias(r.fechaTerminoEjecucion);
+    if (this.cerrado(r)) return { text: 'Cerrado', color: '#546E7A' };
+    if (this.enEjecucion(r)) {
+      if (b !== null && b < 0) return { text: 'Vencido hace ' + Math.abs(b) + ' d', color: '#C62828' };
+      if (b !== null) return { text: 'Vence en ' + b + ' d', color: b <= 15 ? '#B77900' : '#0E7C86' };
+      return { text: 'En curso', color: '#0E7C86' };
+    }
+    if (a !== null && a > 0) return { text: 'Inicio planificado en ' + a + ' d', color: a <= 7 ? '#B77900' : '#6B7A8D' };
+    if (a !== null || b !== null) return { text: 'Programado, sin inicio confirmado', color: '#6B7A8D' };
+    return { text: 'Sin fechas', color: '#9AA6B4' };
+  }
+
+  api() {
+    const p = new URLSearchParams(location.search).get('api');
+    return this.props.apiUrl || p || 'https://script.google.com/macros/s/AKfycbzu3VY4_WHV66VQiDPZxK-AISko4sTtGmCVDtrxzJ4VbIY4URVSfHMP8NEfLju7NqE4/exec';
+  }
+
+  componentDidMount() {
+    const p = new URLSearchParams(location.search);
+    const patch = {};
+    ['q', 'etapa', 'fondo', 'comuna', 'evaluador', 'hito', 'plazo', 'view'].forEach(k => { const v = p.get(k); if (v) patch[k] = v; });
+    if (this.props.vistaInicial && !patch.view) patch.view = this.props.vistaInicial;
+    if (Object.keys(patch).length) this.setState(patch);
+    this.load();
+  }
+
+  syncUrl(next) {
+    try {
+      const p = new URLSearchParams(location.search);
+      ['q', 'etapa', 'fondo', 'comuna', 'evaluador', 'hito', 'plazo', 'view'].forEach(k => {
+        const v = next[k] !== undefined ? next[k] : this.state[k];
+        if (v && !(k === 'view' && v === 'panorama')) p.set(k, v); else p.delete(k);
+      });
+      const qs = p.toString();
+      history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+    } catch (e) { /* noop */ }
+  }
+
+  set(patch) { this.setState(patch); this.syncUrl(patch); }
+
+  jsonp(url, timeoutMs = 30000) {
+    return new Promise((resolve, reject) => {
+      const cb = '__fndrCb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+      const script = document.createElement('script');
+      const timer = setTimeout(() => { done(); reject(new Error('Tiempo de espera agotado al consultar el Web App')); }, timeoutMs);
+      function done() { clearTimeout(timer); delete window[cb]; script.remove(); }
+      window[cb] = j => { done(); resolve(j); };
+      script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + encodeURIComponent(cb) + '&_=' + Date.now();
+      script.onerror = () => { done(); reject(new Error('No se pudo cargar la respuesta del Web App')); };
+      document.head.appendChild(script);
+    });
+  }
+
+  async load() {
+    this.setState({ loading: true, notice: '' });
+    try {
+      const json = await this.jsonp(this.api());
+      if (json.ok === false) throw new Error(json.error || 'Error del Apps Script');
+      const raw = (Array.isArray(json.data) ? json.data : []).map(r => ({ ...r, acuerdoCore: this.yesNo(r.acuerdoCore) }));
+      // Avisos no fatales del Apps Script (p. ej. una hoja ausente): se muestran
+      // sin descartar los datos que sí llegaron.
+      const avisos = Array.isArray(json.avisos) ? json.avisos.filter(a => this.has(a)) : [];
+      this.setState({ raw, loading: false, demo: false, updatedAt: json.updatedAt || '', sources: json.sources || null, notice: avisos.length ? 'Avisos de la fuente: ' + avisos.join(' — ') : '' });
+    } catch (err) {
+      this.setState({
+        raw: this.DEMO, loading: false, demo: true, updatedAt: '', sources: null,
+        notice: 'No fue posible conectar con la planilla en vivo (' + err.message + '). Se muestran datos de demostración para revisar el diseño; al publicar en GitHub Pages con el endpoint habilitado la carga es automática.'
+      });
+    }
+  }
+
+  filtered() {
+    const q = this.norm(this.state.q);
+    const hito = this.state.hito;
+    const mi = this.MILESTONES.findIndex(m => m.k === hito);
+    return this.state.raw.filter(r => {
+      if (this.state.etapa && this.clean(r.etapa) !== this.state.etapa) return false;
+      if (this.state.fondo && this.clean(r.fondo) !== this.state.fondo) return false;
+      if (this.state.comuna && this.clean(r.comuna) !== this.state.comuna) return false;
+      if (this.state.evaluador && this.clean(r.evaluadorFactibilidad) !== this.state.evaluador && this.clean(r.evaluadorAC) !== this.state.evaluador) return false;
+      if (mi >= 0 && !this.MILESTONES[mi].test(r)) return false;
+      if (this.state.plazo) { const pz = this.PLAZOS.find(x => x.value === this.state.plazo); if (pz && pz.test && !pz.test(r)) return false; }
+      if (q && !this.norm(JSON.stringify(r)).includes(q)) return false;
+      return true;
+    });
+  }
+
+  enEjecucion(r) {
+    const e = this.clean(r.estadoEjecucion);
+    if (/ejecuci[oó]n|en curso|iniciad|terminad|finaliz|cerrad/i.test(e)) return true;
+    const conRes = this.has(r.resolucionUrl) || this.has(r.resolucionNumero);
+    const ini = this.parseDate(r.fechaInicioEjecucion);
+    return conRes && !!ini && ini.getTime() <= Date.now();
+  }
+
+  /* Último hito CONTIGUO cumplido: se corta en el primero que falla, para no
+     dar por cumplidas etapas que el expediente todavía no acredita. */
+  progress(r) {
+    let last = -1;
+    for (let i = 0; i < this.MILESTONES.length; i++) {
+      if (!this.MILESTONES[i].test(r)) break;
+      last = i;
+    }
+    return last;
+  }
+
+  filled(r) { return this.MILESTONES.filter(m => m.test(r)).length; }
+
+  estado(r) {
+    if (this.stopped(r)) return { label: 'No continúa', bg: '#FFF1F1', color: '#9B1C1C' };
+    const i = this.progress(r);
+    if (i < 0) return { label: 'Recepcionado', bg: '#EEF1F5', color: '#546272' };
+    const eje = this.clean(r.estadoEjecucion);
+    if (i === 6) return { label: eje || 'En ejecución', bg: '#EAF3F4', color: '#0B4A50' };
+    if (i === 5) return { label: 'Con resolución', bg: '#F4EDFB', color: '#5B2A86' };
+    if (i === 4) return { label: 'Priorizado CORE', bg: '#F4EDFB', color: '#5B2A86' };
+    if (i === 3) return { label: 'A&C favorable', bg: '#EAF6EB', color: '#256128' };
+    if (i === 2) return { label: this.clean(r.estadoAC) || 'En A&C', bg: '#FFF8E6', color: '#7A5300' };
+    if (i === 1) return { label: 'Factibilidad favorable', bg: '#EAF6EB', color: '#256128' };
+    return { label: this.clean(r.estadoFactibilidad) || 'En factibilidad', bg: '#FFF8E6', color: '#7A5300' };
+  }
+
+  /**
+   * Tono de píldora para el estado puntual de UNA etapa (no el global).
+   * Lo negativo se evalúa primero: «desfavorable» contiene «favorable» y
+   * «no factible» contiene «factible».
+   */
+  tonoPill(v) {
+    const n = this.norm(v);
+    if (!n) return { bg: '#F1F4F8', color: '#8A96A4' };
+    if (/desestim|desfavorable|inadmis|no factible|rechaz|no contin/.test(n)) return { bg: '#FFF1F1', color: '#9B1C1C' };
+    if (/observ|pendiente|revision|espera|subsan|incomplet/.test(n)) return { bg: '#FFF8E6', color: '#7A5300' };
+    if (/favorable|habilitar|factible|cumple|priorizad|terminad|aprobad|avanza/.test(n)) return { bg: '#EAF6EB', color: '#256128' };
+    return { bg: '#EEF1F5', color: '#546272' };
+  }
+
+  alerts(r) { return Array.isArray(r.alertas) ? r.alertas.filter(a => this.has(a)) : (this.has(r.alertas) ? [this.clean(r.alertas)] : []); }
+
+  hitoCells(r) {
+    const stop = this.stopped(r);
+    const last = this.progress(r);
+    return this.MILESTONES.map((m, i) => {
+      const ok = m.test(r);
+      let color = '#E5EAF1';
+      if (ok) color = stop ? '#C62828' : (i > last ? '#BFD8DC' : (i >= 4 ? '#5B2A86' : '#0E7C86'));
+      return { title: m.t + (ok && i > last ? ' (registrado, etapa previa pendiente)' : ''), color };
+    });
+  }
+
+  exportCsv = () => {
+    const d = this.filtered();
+    const cols = [['nPostulacion', 'N°'], ['nombreProyecto', 'Proyecto'], ['institucion', 'Institución'], ['comuna', 'Comuna'], ['fondo', 'Fondo'], ['categoria', 'Categoría'], ['monto', 'Monto'], ['etapa', 'Etapa'], ['estadoFactibilidad', 'Factibilidad'], ['evaluadorFactibilidad', 'Evaluador factibilidad'], ['dictamenAC', 'Dictamen A&C'], ['estadoAC', 'Estado A&C'], ['evaluadorAC', 'Evaluador A&C'], ['acuerdoCore', 'Acuerdo CORE'], ['acuerdoCoreNumero', 'N° acuerdo'], ['resolucionNumero', 'N° resolución'], ['fechaInicioEjecucion', 'Inicio'], ['fechaTerminoEjecucion', 'Término'], ['estadoEjecucion', 'Ejecución']];
+    const esc = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const lines = [cols.map(c => esc(c[1])).join(';')];
+    d.forEach(r => lines.push(cols.map(c => esc(c[0] === 'monto' ? this.parseMoney(r.monto) : this.clean(r[c[0]]))).join(';')));
+    lines.push(esc('Estado actual') + ';' + esc('Alertas'));
+    const blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'fndr-l3-cartera.csv';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  };
+
+  renderVals() {
+    const S = this.state;
+    const raw = S.raw;
+    const d = this.filtered();
+    const total = d.length || 0;
+    const max = Math.max(total, 1);
+    const showMontos = this.props.mostrarMontos !== false;
+
+    const counts = {};
+    this.MILESTONES.forEach(m => { counts[m.k] = d.filter(m.test).length; });
+    const alertRows = d.filter(r => this.alerts(r).length);
+    const montoTotal = d.reduce((a, r) => a + this.parseMoney(r.monto), 0);
+    const montoCore = d.filter(r => this.coreOk(r)).reduce((a, r) => a + this.parseMoney(r.monto), 0);
+
+    const tabDefs = [['panorama', 'Panorama', total], ['proyectos', 'Proyectos', total], ['alertas', 'Alertas', alertRows.length]];
+    const tabs = tabDefs.map(([k, label, count]) => {
+      const on = S.view === k;
+      return {
+        label, count, onClick: () => this.set({ view: k }),
+        bg: on ? '#F4F6FA' : 'transparent', color: on ? '#0B2545' : '#C3D6E5',
+        line: on ? '#0E7C86' : 'transparent', weight: on ? 600 : 500,
+        badgeBg: on ? '#0E7C86' : 'rgba(255,255,255,.16)', badgeColor: on ? '#fff' : '#C3D6E5'
+      };
+    });
+
+    const uniq = key => [...new Set(raw.map(r => this.clean(r[key])).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+    const evSet = new Set();
+    raw.forEach(r => { if (this.has(r.evaluadorFactibilidad)) evSet.add(this.clean(r.evaluadorFactibilidad)); if (this.has(r.evaluadorAC)) evSet.add(this.clean(r.evaluadorAC)); });
+    const opt = (values, all) => [{ value: '', label: all }].concat(values.map(v => ({ value: v, label: v })));
+    const selects = [
+      { label: 'Etapa', value: S.etapa, options: opt(uniq('etapa'), 'Todas'), onChange: e => this.set({ etapa: e.target.value }) },
+      { label: 'Fondo', value: S.fondo, options: opt(uniq('fondo'), 'Todos'), onChange: e => this.set({ fondo: e.target.value }) },
+      { label: 'Comuna', value: S.comuna, options: opt(uniq('comuna'), 'Todas'), onChange: e => this.set({ comuna: e.target.value }) },
+      { label: 'Evaluador/a', value: S.evaluador, options: opt([...evSet].sort((a, b) => a.localeCompare(b, 'es')), 'Todas/os'), onChange: e => this.set({ evaluador: e.target.value }) },
+      { label: 'Plazo de ejecución', value: S.plazo, options: this.PLAZOS.map(p => ({ value: p.value, label: p.label })), onChange: e => this.set({ plazo: e.target.value }) }
+    ];
+
+    const chips = [];
+    if (S.q) chips.push({ label: '“' + S.q + '”', onClear: () => this.set({ q: '' }) });
+    ['etapa', 'fondo', 'comuna', 'evaluador'].forEach(k => { if (S[k]) chips.push({ label: S[k], onClear: () => this.set({ [k]: '' }) }); });
+    if (S.hito) { const m = this.MILESTONES.find(x => x.k === S.hito); if (m) chips.push({ label: 'Hito: ' + m.t, onClear: () => this.set({ hito: '' }) }); }
+    if (S.plazo) { const pz = this.PLAZOS.find(x => x.value === S.plazo); if (pz) chips.push({ label: 'Plazo: ' + pz.label, onClear: () => this.set({ plazo: '' }) }); }
+
+    const kpis = [
+      { label: 'Proyectos visibles', value: String(total), detail: raw.length + ' en la planilla', color: '#0B2545', pct: 100 },
+      { label: 'Factibilidad favorable', value: String(counts.ff), detail: Math.round(counts.ff / max * 100) + '% de la cartera', color: '#2E7D32', pct: counts.ff / max * 100 },
+      { label: 'A&C favorable', value: String(counts.acf), detail: counts.ac + ' en revisión técnica', color: '#2E7D32', pct: counts.acf / max * 100 },
+      { label: 'Priorizados CORE', value: String(counts.core), detail: Math.round(counts.core / max * 100) + '% de la cartera', color: '#5B2A86', pct: counts.core / max * 100 },
+      { label: 'Con resolución', value: String(counts.res), detail: 'Acto administrativo emitido', color: '#5B2A86', pct: counts.res / max * 100 },
+      { label: 'En ejecución', value: String(counts.eje), detail: 'Con recursos en operación', color: '#0E7C86', pct: counts.eje / max * 100 },
+      { label: 'Alertas activas', value: String(alertRows.length), detail: alertRows.length ? 'Requieren gestión' : 'Sin pendientes', color: alertRows.length ? '#C62828' : '#6B7A8D', pct: alertRows.length / max * 100 },
+      { label: 'Monto priorizado CORE', value: showMontos ? this.short(montoCore) : '—', detail: counts.core + ' iniciativas · cartera ' + this.short(montoTotal), color: '#0B2545', pct: montoTotal ? montoCore / montoTotal * 100 : 0 }
+    ];
+
+    let prev = null;
+    const funnel = this.MILESTONES.map((m, i) => {
+      const n = counts[m.k];
+      const pct = Math.round(n / max * 100);
+      const delta = prev === null ? 0 : n - prev;
+      const drop = prev === null ? 'base' : (delta === 0 ? 'sin caída' : (delta > 0 ? '+' + delta : '−' + Math.abs(delta)));
+      const dropColor = prev === null ? '#8B96A3' : (delta === 0 ? '#2E7D32' : (delta > 0 ? '#0E7C86' : '#C62828'));
+      prev = n;
+      const on = S.hito === m.k;
+      const c1 = i >= 4 ? '#5B2A86' : (i >= 2 ? '#0E7C86' : '#0B2545');
+      const c2 = i >= 4 ? '#8250B4' : (i >= 2 ? '#3FA9AF' : '#315D88');
+      return {
+        step: String(i + 1), label: m.t, n: String(n), pct, pctLabel: pct + '%', drop, dropColor, c1, c2,
+        rowBg: on ? '#EAF3F4' : 'transparent',
+        dotBg: on ? '#0E7C86' : '#F1F5F9', dotColor: on ? '#fff' : '#526375', dotBorder: on ? '#0E7C86' : '#E2E8F0',
+        onClick: () => this.set({ hito: on ? '' : m.k })
+      };
+    });
+
+    const donut = (entries, colorFn) => {
+      const C = 2 * Math.PI * 54;
+      const tot = entries.reduce((a, e) => a + e.n, 0) || 1;
+      let acc = 0;
+      return entries.map((e, i) => {
+        const len = e.n / tot * C;
+        const seg = { ...e, color: colorFn(e, i), dash: len.toFixed(1) + ' ' + (C - len).toFixed(1), offset: (-acc).toFixed(1) };
+        acc += len;
+        return seg;
+      });
+    };
+
+    const fondoMap = {};
+    d.forEach(r => { const k = this.clean(r.fondo) || 'Sin fondo'; fondoMap[k] = fondoMap[k] || { n: 0, monto: 0 }; fondoMap[k].n++; fondoMap[k].monto += this.parseMoney(r.monto); });
+    const fondos = donut(
+      Object.entries(fondoMap).sort((a, b) => b[1].n - a[1].n).map(([label, v]) => ({ label, n: v.n, monto: v.monto })),
+      (e, i) => this.FONDO_COLORS[i % this.FONDO_COLORS.length]
+    ).map(e => ({ ...e, montoShort: showMontos ? this.short(e.monto) : '', onClick: () => this.set({ fondo: S.fondo === e.label ? '' : e.label }) }));
+
+    const conCore = d.filter(r => this.coreOk(r));
+    const ejeBuckets = [
+      { label: 'En ejecución', color: '#0E7C86', test: r => /ejecuci[oó]n|en curso|iniciad/i.test(this.clean(r.estadoEjecucion)) },
+      { label: 'Por iniciar', color: '#B77900', test: r => /por iniciar|no iniciad/i.test(this.clean(r.estadoEjecucion)) || (!this.has(r.estadoEjecucion) && this.has(r.fechaInicioEjecucion)) },
+      { label: 'Terminado', color: '#546E7A', test: r => /terminad|cerrad|finaliz/i.test(this.clean(r.estadoEjecucion)) },
+      { label: 'Sin informar', color: '#CBD5E1', test: r => !this.has(r.estadoEjecucion) && !this.has(r.fechaInicioEjecucion) }
+    ];
+    const usedEje = new Set();
+    const ejeEntries = ejeBuckets.map(b => {
+      const items = conCore.filter(r => !usedEje.has(r) && b.test(r));
+      items.forEach(r => usedEje.add(r));
+      return { label: b.label, n: items.length, c: b.color };
+    }).filter(e => e.n > 0);
+    const ejecucion = donut(ejeEntries.length ? ejeEntries : [{ label: 'Sin proyectos con acuerdo', n: 1, c: '#E5EAF1' }], e => e.c);
+
+    const comunaMap = {};
+    d.forEach(r => { const k = this.clean(r.comuna) || 'Sin comuna'; comunaMap[k] = comunaMap[k] || { n: 0, monto: 0 }; comunaMap[k].n++; comunaMap[k].monto += this.parseMoney(r.monto); });
+    const comunaList = Object.entries(comunaMap).sort((a, b) => b[1].monto - a[1].monto).slice(0, 9);
+    const maxComuna = comunaList.length ? comunaList[0][1].monto || 1 : 1;
+    const comunas = comunaList.map(([name, v]) => ({
+      name, n: v.n + (v.n === 1 ? ' proy.' : ' proy.'), monto: showMontos ? this.short(v.monto) : '',
+      pct: Math.max(2, Math.round(v.monto / maxComuna * 100)),
+      onClick: () => this.set({ comuna: S.comuna === name ? '' : name })
+    }));
+
+    const evMap = {};
+    d.forEach(r => {
+      const f = this.clean(r.evaluadorFactibilidad), a = this.clean(r.evaluadorAC);
+      if (f) { evMap[f] = evMap[f] || { f: 0, ac: 0 }; evMap[f].f++; }
+      if (a) { evMap[a] = evMap[a] || { f: 0, ac: 0 }; evMap[a].ac++; }
+    });
+    const evList = Object.entries(evMap).map(([name, v]) => ({ name, f: v.f, ac: v.ac, total: v.f + v.ac })).sort((a, b) => b.total - a.total);
+    const maxEv = evList.length ? Math.max(...evList.map(e => e.total)) : 1;
+    const evaluadores = evList.map(e => ({
+      name: e.name, total: e.f + ' F · ' + e.ac + ' A&C',
+      wf: e.f / maxEv * 100, wac: e.ac / maxEv * 100,
+      onClick: () => this.set({ evaluador: S.evaluador === e.name ? '' : e.name })
+    }));
+
+    const montoBars = [
+      { label: 'Monto solicitado (cartera visible)', value: showMontos ? this.money(montoTotal) : '—', pct: 100, color: '#315D88', detail: total + ' iniciativas' },
+      { label: 'Monto priorizado por el CORE', value: showMontos ? this.money(montoCore) : '—', pct: montoTotal ? Math.max(1, montoCore / montoTotal * 100) : 0, color: '#5B2A86', detail: counts.core + ' con acuerdo del Consejo Regional' }
+    ];
+
+    const dated = d.map(r => ({ r, s: this.parseDate(r.fechaInicioEjecucion), e: this.parseDate(r.fechaTerminoEjecucion) })).filter(x => x.s || x.e);
+    let ganttMonths = [], ganttRows = [], ganttSubtitle = 'Sin fechas de ejecución informadas en la selección actual';
+    if (dated.length) {
+      const starts = dated.map(x => (x.s || x.e).getTime());
+      const ends = dated.map(x => (x.e || x.s).getTime());
+      const min = new Date(Math.min(...starts)); min.setDate(1);
+      const maxD = new Date(Math.max(...ends));
+      const end = new Date(maxD.getFullYear(), maxD.getMonth() + 1, 1);
+      const span = end - min || 1;
+      const names = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+      const cur = new Date(min);
+      while (cur < end && ganttMonths.length < 30) { ganttMonths.push({ label: names[cur.getMonth()] + ' ' + String(cur.getFullYear()).slice(2) }); cur.setMonth(cur.getMonth() + 1); }
+      const hoyX = Math.min(100, Math.max(0, (Date.now() - min) / span * 100));
+      ganttRows = dated.sort((a, b) => (a.s || a.e) - (b.s || b.e)).map(x => {
+        const s = x.s || x.e, e = x.e || x.s;
+        const eje = this.clean(x.r.estadoEjecucion);
+        const color = /terminad|cerrad|finaliz/i.test(eje) ? '#546E7A' : (/ejecuci[oó]n|en curso|iniciad/i.test(eje) ? '#0E7C86' : '#B77900');
+        return {
+          name: this.clean(x.r.nombreProyecto) || 'Sin nombre',
+          range: this.fmtDate(x.r.fechaInicioEjecucion) + ' → ' + this.fmtDate(x.r.fechaTerminoEjecucion) + ' · ' + this.proximidad(x.r).text,
+          x: (s - min) / span * 100, w: Math.max(1.5, (e - s) / span * 100), color, hoyX,
+          onClick: () => this.setState({ sel: x.r })
+        };
+      });
+      ganttSubtitle = ganttRows.length + ' proyectos con fechas informadas · la línea roja marca hoy';
+    }
+
+    const colDefs = [['nPostulacion', 'N°', 60, 'left'], ['nombreProyecto', 'Proyecto / institución', 300, 'left'], ['fondo', 'Fondo y comuna', 150, 'left'], ['monto', 'Monto', 120, 'right'], ['_hitos', 'Hitos del proceso', 210, 'left'], ['estadoFactibilidad', 'Factibilidad', 160, 'left'], ['dictamenAC', 'A&C', 180, 'left'], ['acuerdoCore', 'Priorización', 130, 'left'], ['_estado', 'Estado actual', 160, 'left'], ['_alertas', '⚠', 60, 'center']];
+    const columns = colDefs.map(([key, label, w, align]) => ({
+      label, w, align,
+      arrow: S.sortKey === key ? (S.sortDir > 0 ? ' ↑' : ' ↓') : '',
+      onSort: () => { if (key.startsWith('_')) return; this.setState(s => ({ sortKey: key, sortDir: s.sortKey === key ? -s.sortDir : 1 })); }
+    }));
+
+    const sorted = [...d].sort((a, b) => {
+      let av = a[S.sortKey], bv = b[S.sortKey];
+      if (S.sortKey === 'monto') { av = this.parseMoney(av); bv = this.parseMoney(bv); return (av - bv) * S.sortDir; }
+      return String(this.clean(av)).localeCompare(String(this.clean(bv)), 'es', { numeric: true, sensitivity: 'base' }) * S.sortDir;
+    });
+
+    const fondoTone = { Cultura: ['#F1EDFA', '#4C2A7A'], Deporte: ['#EAF3F4', '#0B4A50'], Educación: ['#EAF1F8', '#1E3A5F'], Patrimonio: ['#FBF3E4', '#6B4A00'] };
+    const rows = sorted.map(r => {
+      const est = this.estado(r);
+      const al = this.alerts(r);
+      const last = this.progress(r);
+      const tone = fondoTone[this.clean(r.fondo)] || ['#EEF1F5', '#41505F'];
+      // Estado puntual de cada etapa, para las columnas a la derecha de los hitos.
+      const tf = this.tonoPill(r.estadoFactibilidad);
+      const acTxt = this.clean(r.dictamenAC) || this.clean(r.estadoAC);
+      const ta = this.tonoPill(acTxt);
+      const prioTxt = this.coreOk(r) ? 'Priorizado CORE' : this.clean(r.pronunciamiento);
+      const tp = this.coreOk(r) ? { bg: '#F4EDFB', color: '#5B2A86' } : this.tonoPill(prioTxt);
+      return {
+        n: this.clean(r.nPostulacion) || '—',
+        proyecto: this.clean(r.nombreProyecto) || 'Sin nombre',
+        institucion: this.clean(r.institucion) || '—',
+        fondo: this.clean(r.fondo) || 'Sin fondo', fondoBg: tone[0], fondoColor: tone[1],
+        comuna: this.clean(r.comuna) || '—',
+        monto: showMontos ? this.money(this.parseMoney(r.monto)) : '—',
+        hitos: this.hitoCells(r),
+        hitoLabel: this.filled(r) + ' de 7 hitos cumplidos',
+        fact: this.clean(r.estadoFactibilidad) || '—', factBg: tf.bg, factColor: tf.color,
+        factSub: this.clean(r.evaluadorFactibilidad) || '',
+        ac: acTxt || '—', acBg: ta.bg, acColor: ta.color,
+        acSub: [this.has(r.dictamenAC) ? this.clean(r.estadoAC) : '', this.has(r.rondaAC) ? 'R' + this.clean(r.rondaAC) : ''].filter(Boolean).join(' · '),
+        prio: prioTxt || 'Sin priorizar', prioBg: tp.bg, prioColor: tp.color,
+        prioSub: [this.clean(r.acuerdoCoreNumero), this.has(r.acuerdoCoreFecha) ? this.fmtDate(r.acuerdoCoreFecha) : ''].filter(Boolean).join(' · '),
+        estado: est.label, estadoBg: est.bg, estadoColor: est.color,
+        prox: this.proximidad(r).text, proxColor: this.proximidad(r).color,
+        alertBadge: al.length ? String(al.length) : '—',
+        rowBg: S.sel === r ? '#F0F7F8' : 'transparent',
+        onOpen: () => this.setState({ sel: r })
+      };
+    });
+
+    const alertCards = alertRows.map(r => {
+      const est = this.estado(r);
+      return {
+        n: this.clean(r.nPostulacion), proyecto: this.clean(r.nombreProyecto) || 'Sin nombre',
+        institucion: this.clean(r.institucion) || '—', estado: est.label,
+        items: this.alerts(r).map(t => ({ text: t })),
+        onOpen: () => this.setState({ sel: r })
+      };
+    });
+
+    const sel = S.sel;
+    let detHitos = [], detFields = [], detLinks = [], detEstado = '', detMonto = '', detFondo = '';
+    if (sel) {
+      const last = this.progress(sel);
+      const stop = this.stopped(sel);
+      detHitos = this.MILESTONES.map((m, i) => {
+        const ok = m.test(sel);
+        let color = '#E5EAF1';
+        if (ok) color = stop ? '#C62828' : (i > last ? '#BFD8DC' : (i >= 4 ? '#5B2A86' : '#0E7C86'));
+        return { title: m.t, color, textColor: ok ? '#1B2838' : '#9AA6B4' };
+      });
+      detEstado = this.estado(sel).label;
+      detMonto = showMontos ? this.money(this.parseMoney(sel.monto)) : '—';
+      detFondo = [this.clean(sel.fondo), this.clean(sel.categoria)].filter(Boolean).join(' · ') || 'Sin fondo';
+      const L = (u, label) => { const s = this.clean(u); if (/^https?:\/\//i.test(s)) detLinks.push({ url: s, label }); };
+      L(sel.enlacePautaFactibilidad, 'Pauta factibilidad'); L(sel.pdfFactibilidad, 'PDF factibilidad');
+      L(sel.enlacePautaAC, 'Pauta A&C'); L(sel.pdfAC, 'PDF A&C');
+      L(sel.acuerdoCoreUrl, 'Acuerdo CORE'); L(sel.resolucionUrl, 'Resolución');
+      const F = (k, v, span, bg) => detFields.push({ k, v: this.has(v) ? this.clean(v) : '—', span: span || 'auto', bg: bg || '#fff' });
+      F('Comuna', sel.comuna); F('Etapa declarada', sel.etapa);
+      F('Factibilidad', sel.estadoFactibilidad); F('Evaluador/a factibilidad', sel.evaluadorFactibilidad);
+      F('Dictamen A&C', sel.dictamenAC); F('Estado A&C', sel.estadoAC);
+      F('Evaluador/a A&C', sel.evaluadorAC); F('Ronda A&C', sel.rondaAC);
+      F('Observaciones abiertas', sel.observacionesAbiertasAC); F('Observaciones cerradas', sel.observacionesCerradasAC);
+      F('Fecha evaluación A&C', this.fmtDate(sel.fechaEvaluacionAC)); F('Pronunciamiento', sel.pronunciamiento);
+      F('Acuerdo CORE', [this.clean(sel.acuerdoCore), this.clean(sel.acuerdoCoreNumero), this.has(sel.acuerdoCoreFecha) ? this.fmtDate(sel.acuerdoCoreFecha) : ''].filter(Boolean).join(' · '));
+      F('Resolución', [this.clean(sel.resolucionNumero), this.has(sel.resolucionFecha) ? this.fmtDate(sel.resolucionFecha) : ''].filter(Boolean).join(' · '));
+      F('Ejecución', [this.fmtDate(sel.fechaInicioEjecucion), this.fmtDate(sel.fechaTerminoEjecucion), this.clean(sel.estadoEjecucion)].filter(x => x && x !== '—').join(' · '));
+      F('RUT institución', sel.rutOrganizacion || sel.rut);
+      const al = this.alerts(sel);
+      F('Alertas', al.length ? al.join('\n') : 'Sin alertas', '1/-1', al.length ? '#FFF6F6' : '#fff');
+      // Observaciones de cada etapa: acá viene el detalle de los criterios y el
+      // motivo de una evaluación pendiente (correcciones 2026-07-27).
+      if (this.has(sel.observacionesFactibilidad)) F('Observaciones de Factibilidad', sel.observacionesFactibilidad, '1/-1', '#FAFBFD');
+      if (this.has(sel.observacionesAC)) F('Observaciones de A&C', sel.observacionesAC, '1/-1', '#FAFBFD');
+      const resumen = sel.resumen || sel.resumenAC || sel.resumenFactibilidad;
+      if (this.has(resumen)) F('Resumen técnico', resumen, '1/-1', '#FAFBFD');
+      const coment = sel.comentario || sel.comentarioAC;
+      if (this.has(coment)) F('Comentario', coment, '1/-1', '#FAFBFD');
+    }
+
+    return {
+      loading: S.loading, notice: S.notice, tabs, selects, chips, hasChips: chips.length > 0,
+      q: S.q, onSearch: e => this.set({ q: e.target.value }),
+      onClear: () => this.set({ q: '', etapa: '', fondo: '', comuna: '', evaluador: '', hito: '', plazo: '' }),
+      onReload: () => this.load(), onExport: this.exportCsv, onPrint: () => window.print(),
+      updatedLabel: S.demo ? 'Datos de demostración' : (S.updatedAt ? 'Actualizado: ' + new Date(S.updatedAt).toLocaleString('es-CL') : 'Conectado al Web App'),
+      sourcesLabel: S.sources ? ('Fuentes · Factibilidad ' + (S.sources.factibilidad || 0) + ' · A&C ' + (S.sources.admisibilidadConsistencia || 0) + ' · CORE ' + (S.sources.priorizacionCore || 0)) : 'Cruce por N° de postulación',
+      visibleLabel: total + ' de ' + raw.length + ' proyectos',
+      skeletons: [1, 2, 3, 4, 5, 6, 7, 8].map(i => ({ i })),
+      showPanorama: !S.loading && S.view === 'panorama',
+      showTabla: !S.loading && S.view === 'proyectos',
+      showAlertas: !S.loading && S.view === 'alertas',
+      kpis, funnel, fondos, totalVisible: String(total),
+      ejecucion, ejecucionTotal: String(conCore.length),
+      comunas, evaluadores, montoBars,
+      tasaCore: (montoTotal ? Math.round(montoCore / montoTotal * 100) : 0) + '%',
+      ganttMonths, ganttRows, ganttSubtitle,
+      columns, rows, emptyRows: rows.length === 0,
+      alertCards, noAlertas: alertCards.length === 0,
+      sel, detHitos, detFields, detLinks, detEstado, detMonto, detFondo,
+      onClose: () => this.setState({ sel: null }),
+      onCloseBackdrop: e => { if (e.target === e.currentTarget) this.setState({ sel: null }); }
+    };
+  }
+}
+</script>
+</body>
+</html>
