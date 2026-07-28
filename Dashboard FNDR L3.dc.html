@@ -337,10 +337,10 @@ a:hover{color:#0B2545;text-decoration:underline}
           </div>
         </div>
         <div style="overflow:auto;max-height:74vh">
-          <table style="border-collapse:collapse;width:100%;font-size:13px;min-width:1080px">
+          <table style="border-collapse:collapse;width:100%;font-size:13px;min-width:1560px">
             <thead>
               <tr>
-                <sc-for list="{{ columns }}" as="c" hint-placeholder-count="7">
+                <sc-for list="{{ columns }}" as="c" hint-placeholder-count="10">
                   <th onClick="{{ c.onSort }}" style="position:sticky;top:0;background:#0B2545;color:#fff;text-align:{{ c.align }};padding:11px 12px;font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:600;white-space:nowrap;cursor:pointer;z-index:2;min-width:{{ c.w }}px">{{ c.label }}{{ c.arrow }}</th>
                 </sc-for>
               </tr>
@@ -365,6 +365,18 @@ a:hover{color:#0B2545;text-decoration:underline}
                       </sc-for>
                     </div>
                     <div style="font-size:11px;color:#6B7A8D;margin-top:5px;font-family:'IBM Plex Mono',monospace">{{ r.hitoLabel }}</div>
+                  </td>
+                  <td style="padding:11px 12px;border-bottom:1px solid #EDF1F6;vertical-align:top;max-width:185px">
+                    <span style="display:inline-block;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;line-height:1.35;background:{{ r.factBg }};color:{{ r.factColor }}">{{ r.fact }}</span>
+                    <div style="font-size:11px;color:#6B7A8D;margin-top:5px">{{ r.factSub }}</div>
+                  </td>
+                  <td style="padding:11px 12px;border-bottom:1px solid #EDF1F6;vertical-align:top;max-width:200px">
+                    <span style="display:inline-block;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;line-height:1.35;background:{{ r.acBg }};color:{{ r.acColor }}">{{ r.ac }}</span>
+                    <div style="font-size:11px;color:#6B7A8D;margin-top:5px">{{ r.acSub }}</div>
+                  </td>
+                  <td style="padding:11px 12px;border-bottom:1px solid #EDF1F6;vertical-align:top;max-width:160px">
+                    <span style="display:inline-block;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;line-height:1.35;background:{{ r.prioBg }};color:{{ r.prioColor }}">{{ r.prio }}</span>
+                    <div style="font-size:11px;color:#6B7A8D;margin-top:5px">{{ r.prioSub }}</div>
                   </td>
                   <td style="padding:11px 12px;border-bottom:1px solid #EDF1F6;vertical-align:top">
                     <span style="display:inline-block;padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:500;background:{{ r.estadoBg }};color:{{ r.estadoColor }};white-space:nowrap">{{ r.estado }}</span>
@@ -660,6 +672,20 @@ class Component extends DCLogic {
     return { label: this.clean(r.estadoFactibilidad) || 'En factibilidad', bg: '#FFF8E6', color: '#7A5300' };
   }
 
+  /**
+   * Tono de píldora para el estado puntual de UNA etapa (no el global).
+   * Lo negativo se evalúa primero: «desfavorable» contiene «favorable» y
+   * «no factible» contiene «factible».
+   */
+  tonoPill(v) {
+    const n = this.norm(v);
+    if (!n) return { bg: '#F1F4F8', color: '#8A96A4' };
+    if (/desestim|desfavorable|inadmis|no factible|rechaz|no contin/.test(n)) return { bg: '#FFF1F1', color: '#9B1C1C' };
+    if (/observ|pendiente|revision|espera|subsan|incomplet/.test(n)) return { bg: '#FFF8E6', color: '#7A5300' };
+    if (/favorable|habilitar|factible|cumple|priorizad|terminad|aprobad|avanza/.test(n)) return { bg: '#EAF6EB', color: '#256128' };
+    return { bg: '#EEF1F5', color: '#546272' };
+  }
+
   alerts(r) { return Array.isArray(r.alertas) ? r.alertas.filter(a => this.has(a)) : (this.has(r.alertas) ? [this.clean(r.alertas)] : []); }
 
   hitoCells(r) {
@@ -851,7 +877,7 @@ class Component extends DCLogic {
       ganttSubtitle = ganttRows.length + ' proyectos con fechas informadas · la línea roja marca hoy';
     }
 
-    const colDefs = [['nPostulacion', 'N°', 60, 'left'], ['nombreProyecto', 'Proyecto / institución', 300, 'left'], ['fondo', 'Fondo y comuna', 150, 'left'], ['monto', 'Monto', 120, 'right'], ['_hitos', 'Hitos del proceso', 210, 'left'], ['_estado', 'Estado actual', 160, 'left'], ['_alertas', '⚠', 60, 'center']];
+    const colDefs = [['nPostulacion', 'N°', 60, 'left'], ['nombreProyecto', 'Proyecto / institución', 300, 'left'], ['fondo', 'Fondo y comuna', 150, 'left'], ['monto', 'Monto', 120, 'right'], ['_hitos', 'Hitos del proceso', 210, 'left'], ['estadoFactibilidad', 'Factibilidad', 160, 'left'], ['dictamenAC', 'A&C', 180, 'left'], ['acuerdoCore', 'Priorización', 130, 'left'], ['_estado', 'Estado actual', 160, 'left'], ['_alertas', '⚠', 60, 'center']];
     const columns = colDefs.map(([key, label, w, align]) => ({
       label, w, align,
       arrow: S.sortKey === key ? (S.sortDir > 0 ? ' ↑' : ' ↓') : '',
@@ -870,6 +896,12 @@ class Component extends DCLogic {
       const al = this.alerts(r);
       const last = this.progress(r);
       const tone = fondoTone[this.clean(r.fondo)] || ['#EEF1F5', '#41505F'];
+      // Estado puntual de cada etapa, para las columnas a la derecha de los hitos.
+      const tf = this.tonoPill(r.estadoFactibilidad);
+      const acTxt = this.clean(r.dictamenAC) || this.clean(r.estadoAC);
+      const ta = this.tonoPill(acTxt);
+      const prioTxt = this.coreOk(r) ? 'Priorizado CORE' : this.clean(r.pronunciamiento);
+      const tp = this.coreOk(r) ? { bg: '#F4EDFB', color: '#5B2A86' } : this.tonoPill(prioTxt);
       return {
         n: this.clean(r.nPostulacion) || '—',
         proyecto: this.clean(r.nombreProyecto) || 'Sin nombre',
@@ -879,6 +911,12 @@ class Component extends DCLogic {
         monto: showMontos ? this.money(this.parseMoney(r.monto)) : '—',
         hitos: this.hitoCells(r),
         hitoLabel: this.filled(r) + ' de 7 hitos cumplidos',
+        fact: this.clean(r.estadoFactibilidad) || '—', factBg: tf.bg, factColor: tf.color,
+        factSub: this.clean(r.evaluadorFactibilidad) || '',
+        ac: acTxt || '—', acBg: ta.bg, acColor: ta.color,
+        acSub: [this.has(r.dictamenAC) ? this.clean(r.estadoAC) : '', this.has(r.rondaAC) ? 'R' + this.clean(r.rondaAC) : ''].filter(Boolean).join(' · '),
+        prio: prioTxt || 'Sin priorizar', prioBg: tp.bg, prioColor: tp.color,
+        prioSub: [this.clean(r.acuerdoCoreNumero), this.has(r.acuerdoCoreFecha) ? this.fmtDate(r.acuerdoCoreFecha) : ''].filter(Boolean).join(' · '),
         estado: est.label, estadoBg: est.bg, estadoColor: est.color,
         prox: this.proximidad(r).text, proxColor: this.proximidad(r).color,
         alertBadge: al.length ? String(al.length) : '—',
