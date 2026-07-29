@@ -1,0 +1,84 @@
+{
+  "_comentario": [
+    "Las CUATRO hojas de «Proyectos Postulados L3» tal como las lee Code.gs:",
+    "filas[0] son los encabezados y todo llega como texto, igual que",
+    "getDataRange().getDisplayValues().",
+    "",
+    "Este archivo es la fuente de tests/fixtures/api.sim.json, que se genera con",
+    "  node tools/gen-fixture.mjs",
+    "y que la prueba vuelve a generar para verificar que sigue siendo una salida",
+    "que el Code.gs vigente puede producir. Antes el api.sim.json estaba escrito a",
+    "mano y contenía filas imposibles (una etapa «Con resolución» sin marca de",
+    "resolución), así que las aserciones pasaban sobre un payload que la capa de",
+    "datos nunca habría emitido.",
+    "",
+    "Casos que se declaran acá a propósito:",
+    " · 1C ≡ 15 — Factibilidad usa «15» y las demás «1C» (equivalencia FoliosL3)",
+    " · 50 — «No factible»: fuera del dominio Y trampa de substring",
+    " · 51 — «En trámite»: el tri-estado que se perdía",
+    " · 52 — «en trámite??»: fuera de dominio, tiene que verse y no borrar la fila",
+    " · 53 — marca de resolución «Sí» SIN N° ni enlace",
+    " · 7 y 54 — N° y enlace de resolución SIN marca / con marca «No»",
+    " · 55 — dictamen A&C favorable con Factibilidad sin habilitar (regla T4)"
+  ],
+  "hojas": [
+    {
+      "nombre": "Iniciativas",
+      "filas": [
+        ["Numero_Ingreso", "Nombre_Proyecto", "Nombre_Organizacion", "Rut_Organizacion", "Comuna", "Fondo", "Tipo_Categoria", "Monto_Solicitado_CLP", "Fecha_Inicio", "Fecha_Termino"],
+        ["1C", "Judocas de Hijuelas Rumbo al Sudamericano Lima 2026", "Club Deportivo Judo Fukuoka", "65.111.222-3", "Hijuelas", "Deporte", "Caso Emblemático", "12000000", "", ""],
+        ["7", "Circuito cultural comunal", "Org Siete", "65.777.111-1", "Quillota", "Cultura", "Caso Emergente", "18000000", "", ""],
+        ["16", "Festival Vilanova España", "ONG Vivir Consentidos", "65.999.888-7", "Valparaíso", "Cultura", "Caso Emblemático", "50000000", "", ""],
+        ["45", "Acercando el deporte y la cultura al valle de Aconcagua", "Club Deportivo Escolar Liceo Mixto Los Andes", "65.333.444-5", "Los Andes", "Deporte", "Caso Excepcional", "30000000", "", ""],
+        ["50", "Multicancha techada del sector alto", "Junta de Vecinos Cerro Alegre", "65.222.333-4", "Concón", "Deporte", "Caso Emergente", "9500000", "", ""],
+        ["51", "Escuela de teatro comunitario", "Corporación Cultural Villa Alemana", "65.444.555-6", "Villa Alemana", "Cultura", "Caso Emblemático", "27000000", "", ""],
+        ["52", "Biblioteca digital escolar", "Liceo Bicentenario de Quilpué", "65.666.777-8", "Quilpué", "Educación", "Caso Excepcional", "15000000", "", ""],
+        ["53", "Restauración del muelle histórico", "Fundación Patrimonio Costero", "65.888.999-0", "San Antonio", "Patrimonio", "Caso Emblemático", "40000000", "", ""],
+        ["54", "Circuito de trail running del valle", "Club Andino La Ligua", "65.101.202-3", "La Ligua", "Deporte", "Caso Emergente", "22000000", "", ""],
+        ["55", "Escuela de circo social del litoral", "Corporación Circo del Puerto", "65.303.404-5", "Cartagena", "Cultura", "Caso Emergente", "21000000", "", ""]
+      ]
+    },
+    {
+      "nombre": "Factibilidad",
+      "filas": [
+        ["Numero_Ingreso", "Nombre_Proyecto", "Revisor", "Estado", "Resumen De proyecto", "Observaciones de Evaluación"],
+        ["15", "Judocas de Hijuelas Rumbo al Sudamericano Lima 2026", "Dominique Plotz", "DESESTIMAR", "", ""],
+        ["7", "Circuito cultural comunal", "Amanda Igor", "EVALUACIÓN PENDIENTE", "", "Criterios sin resolver: D1.6 [sin resultado]\n\nEstado pendiente porque: 1 criterio(s) sin resolver; no puede quedar favorable con criterios abiertos; 1 criterio(s) sin resolver: D1.6 [sin resultado]"],
+        ["16", "FESTIVAL VILANOVA ESPAÑA", "Matias Guerrero", "HABILITAR FORMULACIÓN DE EXPEDIENTE", "", ""],
+        ["45", "Acercando el deporte y la cultura al valle de Aconcagua", "Kinerett Pino", "EVALUACIÓN PENDIENTE", "", "Criterios sin resolver: D1.6 [Incompleto]\n\nEstado pendiente porque: 1 criterio(s) sin resolver; 1 criterio(s) sin resolver: D1.6 [Incompleto]"],
+        ["50", "Multicancha techada del sector alto", "Kinerett Pino", "No factible", "", ""],
+        ["51", "Escuela de teatro comunitario", "Matias Guerrero", "HABILITAR FORMULACIÓN DE EXPEDIENTE", "", ""],
+        ["52", "Biblioteca digital escolar", "Dominique Plotz", "HABILITAR FORMULACIÓN DE EXPEDIENTE", "", ""],
+        ["53", "Restauración del muelle histórico", "Matias Guerrero", "HABILITAR FORMULACIÓN DE EXPEDIENTE", "", ""],
+        ["54", "Circuito de trail running del valle", "Amanda Igor", "HABILITAR FORMULACIÓN DE EXPEDIENTE", "", ""],
+        ["55", "Escuela de circo social del litoral", "Kinerett Pino", "OBSERVAR PARA SUBSANACIÓN", "", ""]
+      ]
+    },
+    {
+      "nombre": "Admisibilidad y Consistencia",
+      "filas": [
+        ["N° postulación", "Nombre proyecto", "Institución - Nombre", "Institución - Rut", "Comuna", "Fondo", "Tipo categoría", "Monto Solicitado GORE", "Evaluador/a", "Ronda", "Dictamen", "Estado proyecto", "Observaciones de Evaluación", "# Obs abiertas", "# Obs cerradas", "Fecha evaluación", "Resumen de proyecto", "Comentario", "Pronunciamiento", "Link Pauta", "Último PDF"],
+        ["1C", "Judocas de Hijuelas Rumbo al Sudamericano Lima 2026", "", "", "", "", "", "", "Amanda Igor", "1", "DESESTIMADO POR NO SUBSANACIÓN", "Desestimado", "", "0", "20", "2026-07-10", "", "", "", "https://docs.google.com/spreadsheets/d/1HnSBskto-FYi9MLXKfT6FnaSn9DWkE-dD25U7Ec1_jg/edit", "pdf-judo-ac"],
+        ["16", "FESTIVAL VILANOVA ESPAÑA", "", "", "", "", "", "", "Matias Guerrero", "2", "EVALUACIÓN TÉCNICA FAVORABLE", "Favorable", "", "0", "32", "2026-07-22", "", "", "", "https://docs.google.com/spreadsheets/d/10VXcJhqT5Q3UunchcA6q3tRZBB5LiE6SGV6dxRv0yLk/edit", "pdf-1252"],
+        ["51", "Escuela de teatro comunitario", "", "", "", "", "", "", "Amanda Igor", "1", "EVALUACIÓN TÉCNICA FAVORABLE", "", "", "0", "14", "2026-07-15", "", "", "", "", ""],
+        ["52", "Biblioteca digital escolar", "", "", "", "", "", "", "Dominique Plotz", "1", "CON OBSERVACIONES", "Con observaciones", "", "3", "5", "2026-07-18", "", "", "", "", ""],
+        ["53", "Restauración del muelle histórico", "", "", "", "", "", "", "Matias Guerrero", "2", "EVALUACIÓN TÉCNICA FAVORABLE", "Favorable", "", "0", "21", "2026-07-21", "", "", "", "", ""],
+        ["54", "Circuito de trail running del valle", "", "", "", "", "", "", "Amanda Igor", "1", "EVALUACIÓN TÉCNICA FAVORABLE", "Favorable", "", "0", "18", "2026-07-19", "", "", "", "", ""],
+        ["55", "Escuela de circo social del litoral", "", "", "", "", "", "", "Dominique Plotz", "1", "EVALUACIÓN TÉCNICA FAVORABLE", "Favorable", "", "0", "9", "2026-07-17", "", "", "", "", ""]
+      ]
+    },
+    {
+      "nombre": "Priorización",
+      "filas": [
+        ["N° postulación", "Nombre proyecto", "Monto solicitado", "Pronunciamiento", "Comentario", "Resumen", "de acuerdo CORE", "N° Acuerdo CORE", "Fecha Acuerdo CORE", "Enlace Acuerdo CORE", "Resolución", "N° Resolución Aprobatoria", "Fecha Resolución Aprobatoria", "Enlace Resolución Aprobatoria", "Fecha inicio ejecución", "Fecha término ejecución", "Estado ejecución"],
+        ["7", "", "", "", "", "", "No", "", "", "", "", "RE 1204", "2026-07-20", "https://example.com/re1204", "", "", ""],
+        ["16", "", "", "avanza, con pronunciamiento favorable", "", "", "Sí", "184/2026", "2026-07-23", "https://example.com/acuerdo184", "", "", "", "", "", "", ""],
+        ["51", "", "", "", "", "", "En trámite", "", "", "", "", "", "", "", "", "", ""],
+        ["52", "", "", "", "", "", "en trámite??", "", "", "", "", "", "", "", "", "", ""],
+        ["53", "", "", "avanza, con pronunciamiento favorable", "", "", "VERDADERO", "190/2026", "2026-07-24", "https://example.com/acuerdo190", "Sí", "", "", "", "", "", ""],
+        ["54", "", "", "", "", "", "Sí", "191/2026", "2026-07-25", "", "No", "RE 998", "2026-07-26", "https://example.com/re998", "", "", ""],
+        ["55", "", "", "", "", "", "No", "", "", "", "No", "", "", "", "", "", ""]
+      ]
+    }
+  ]
+}

@@ -52,9 +52,18 @@ a:hover{color:#0B2545;text-decoration:underline}
       <div style="text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:10px">
         <div style="font-size:12px;color:#B6CBDD;font-family:'IBM Plex Mono',monospace">{{ updatedLabel }}</div>
         <div style="font-size:11px;color:#8FB4CE;font-family:'IBM Plex Mono',monospace">{{ sourcesLabel }}</div>
-        <div data-noprint="1" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+        <div data-noprint="1" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;align-items:flex-end">
+          <label style="display:flex;flex-direction:column;gap:4px;text-align:left">
+            <span style="font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:#8FB4CE;font-weight:600">Alcance de exportación</span>
+            <select value="{{ alcanceExport }}" onChange="{{ onAlcanceExport }}" style="border:1px solid rgba(255,255,255,.28);border-radius:8px;padding:8px 10px;font:inherit;font-size:12.5px;background:#fff;color:#0B2545;cursor:pointer;outline:none">
+              <sc-for list="{{ alcanceOpciones }}" as="o" hint-placeholder-count="2">
+                <option value="{{ o.value }}">{{ o.label }}</option>
+              </sc-for>
+            </select>
+          </label>
           <button onClick="{{ onReload }}" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.28);border-radius:8px;padding:8px 13px;font:inherit;font-size:12.5px;cursor:pointer;backdrop-filter:blur(4px)" style-hover="background:rgba(255,255,255,.2)">↻ Recargar</button>
           <button onClick="{{ onExport }}" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.28);border-radius:8px;padding:8px 13px;font:inherit;font-size:12.5px;cursor:pointer" style-hover="background:rgba(255,255,255,.2)">Exportar CSV</button>
+          <button onClick="{{ onExportDocx }}" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.28);border-radius:8px;padding:8px 13px;font:inherit;font-size:12.5px;cursor:pointer" style-hover="background:rgba(255,255,255,.2)">Exportar Word</button>
           <button onClick="{{ onPrint }}" style="background:#0E7C86;color:#fff;border:1px solid #0E7C86;border-radius:8px;padding:8px 13px;font:inherit;font-size:12.5px;cursor:pointer;font-weight:500" style-hover="background:#0a666e">Imprimir / PDF</button>
         </div>
       </div>
@@ -103,6 +112,11 @@ a:hover{color:#0B2545;text-decoration:underline}
 
   <main style="max-width:1640px;margin:0 auto;padding:24px 28px 56px">
 
+    <div data-card="1" style="background:#fff;border:1px solid #E2E8F0;border-left:4px solid #315D88;border-radius:12px;padding:10px 15px;margin-bottom:18px;font-size:12px;color:#3C4B5C;display:flex;gap:12px;flex-wrap:wrap;align-items:baseline">
+      <span style="font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:#6B7A8D;font-weight:600;flex:none">Selección en pantalla</span>
+      <span style="min-width:0">{{ filtrosImpresos }}</span>
+    </div>
+
     <sc-if value="{{ notice }}" hint-placeholder-val="{{ false }}">
       <div style="background:#FFF8E6;border:1px solid #F0DDAE;border-left:4px solid #B77900;border-radius:12px;padding:14px 16px;margin-bottom:20px;font-size:13px;color:#5C4200;display:flex;gap:12px;align-items:flex-start">
         <span style="font-weight:600">⚠</span>
@@ -128,7 +142,8 @@ a:hover{color:#0B2545;text-decoration:underline}
               <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#6B7A8D;font-weight:600">{{ k.label }}</div>
               <div style="font-size:30px;font-weight:600;letter-spacing:-.02em;margin-top:8px;color:{{ k.color }};font-variant-numeric:tabular-nums">{{ k.value }}</div>
               <div style="font-size:11.5px;color:#6B7A8D;margin-top:3px">{{ k.detail }}</div>
-              <div style="height:4px;border-radius:4px;background:#EDF1F6;margin-top:12px;overflow:hidden">
+              <div style="font-size:11px;color:{{ k.extraColor }};margin-top:3px;font-weight:500">{{ k.extra }}</div>
+              <div style="height:4px;border-radius:4px;background:#EDF1F6;margin-top:10px;overflow:hidden">
                 <div style="height:100%;border-radius:4px;background:{{ k.color }};width:{{ k.pct }}%;transform-origin:left;animation:fndrGrow .6s cubic-bezier(.2,.8,.2,1) both"></div>
               </div>
             </div>
@@ -341,7 +356,7 @@ a:hover{color:#0B2545;text-decoration:underline}
             <thead>
               <tr>
                 <sc-for list="{{ columns }}" as="c" hint-placeholder-count="10">
-                  <th onClick="{{ c.onSort }}" style="position:sticky;top:0;background:#0B2545;color:#fff;text-align:{{ c.align }};padding:11px 12px;font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:600;white-space:nowrap;cursor:pointer;z-index:2;min-width:{{ c.w }}px">{{ c.label }}{{ c.arrow }}</th>
+                  <th onClick="{{ c.onSort }}" title="{{ c.title }}" style="position:sticky;top:0;background:#0B2545;color:#fff;text-align:{{ c.align }};padding:11px 12px;font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:600;white-space:nowrap;cursor:{{ c.cursor }};z-index:2;min-width:{{ c.w }}px">{{ c.label }}{{ c.arrow }}</th>
                 </sc-for>
               </tr>
             </thead>
@@ -400,7 +415,7 @@ a:hover{color:#0B2545;text-decoration:underline}
           <div data-card="1" style="background:#fff;border:1px solid #E2E8F0;border-radius:16px;padding:60px 20px;text-align:center;color:#6B7A8D;font-size:13px">Sin alertas activas en la selección actual.</div>
         </sc-if>
         <sc-for list="{{ alertCards }}" as="a" hint-placeholder-count="4">
-          <div data-card="1" onClick="{{ a.onOpen }}" style="background:#fff;border:1px solid #E2E8F0;border-left:4px solid #C62828;border-radius:14px;padding:16px 18px;box-shadow:0 1px 2px rgba(11,37,69,.04);cursor:pointer;display:grid;grid-template-columns:1fr 320px;gap:20px" style-hover="border-color:#C62828">
+          <div data-card="1" onClick="{{ a.onOpen }}" style="background:#fff;border:1px solid #E2E8F0;border-left:4px solid {{ a.borde }};border-radius:14px;padding:16px 18px;box-shadow:0 1px 2px rgba(11,37,69,.04);cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,340px);gap:20px" style-hover="border-color:#C62828">
             <div style="min-width:0">
               <div style="display:flex;gap:10px;align-items:baseline">
                 <span style="font-family:'IBM Plex Mono',monospace;color:#6B7A8D;font-size:12px">{{ a.n }}</span>
@@ -408,9 +423,12 @@ a:hover{color:#0B2545;text-decoration:underline}
               </div>
               <div style="font-size:12px;color:#6B7A8D;margin-top:3px">{{ a.institucion }} · {{ a.estado }}</div>
             </div>
-            <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
               <sc-for list="{{ a.items }}" as="i" hint-placeholder-count="2">
-                <div style="background:#FFF1F1;color:#8E1F1F;border:1px solid #F4D3D3;border-radius:8px;padding:6px 10px;font-size:12px">{{ i.text }}</div>
+                <div style="background:{{ i.bg }};color:{{ i.color }};border:1px solid {{ i.borde }};border-radius:8px;padding:6px 10px;font-size:12px">
+                  <div style="font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:600;opacity:.7">{{ i.tipo }}</div>
+                  <div style="margin-top:2px;white-space:pre-wrap;word-break:break-word">{{ i.text }}</div>
+                </div>
               </sc-for>
             </div>
           </div>
@@ -473,31 +491,53 @@ class Component extends DCLogic {
   state = {
     raw: [], loading: true, notice: '', updatedAt: '', sources: null, demo: false,
     view: 'panorama', q: '', etapa: '', fondo: '', comuna: '', evaluador: '', hito: '', plazo: '',
-    sel: null, sortKey: 'nPostulacion', sortDir: 1
+    sel: null, sortKey: 'nPostulacion', sortDir: 1,
+    /* Alcance de TODA salida documental — CSV, Word e impresión/PDF — para que
+       las tres digan siempre lo mismo. 'filtrados' | 'todos'. */
+    alcanceExport: 'filtrados',
+    /* Filtros apartados momentáneamente durante una impresión con alcance
+       «todos»: se conservan para poder DECLARARLOS en el encabezado impreso, en
+       vez de que el PDF finja que nunca hubo filtros. */
+    filtrosSuspendidos: null
   };
+
+  VIEWS = ['panorama', 'proyectos', 'alertas'];
 
   MILESTONES = [
     { k: 'f', t: 'Factibilidad', test: r => this.has(r.estadoFactibilidad) },
-    { k: 'ff', t: 'Fact. favorable', test: r => /favorable|habilitar|factible/i.test(this.clean(r.estadoFactibilidad)) },
+    /* D1 — trampa de substring: «No factible» contiene «factible» y
+       «desfavorable» contiene «favorable». El hito pasa a resolverse por
+       igualdad exacta contra los literales canónicos, con lo negativo evaluado
+       primero (el mismo orden que tonoPill/stopped). */
+    { k: 'ff', t: 'Fact. favorable', test: r => this.factFav(r) },
     { k: 'ac', t: 'En A&C', test: r => this.has(r.dictamenAC) || this.has(r.estadoAC) },
+    /* El conteo lo manda el Dictamen (col. L). «Estado proyecto» es una columna
+       DERIVADA del dictamen: exigir que ambas coincidan sólo podía restar. */
     { k: 'acf', t: 'A&C favorable', test: r => this.acFav(r) },
     { k: 'core', t: 'Priorizado CORE', test: r => this.coreOk(r) },
-    { k: 'res', t: 'Con resolución', test: r => this.has(r.resolucionUrl) || this.has(r.resolucionNumero) },
+    /* D3 — el hito lo determina la MARCA de resolución (col. S), no la presencia
+       de un número (col. T) ni de un enlace (col. U). El enlace es independiente
+       del conteo: informa, no acredita. */
+    { k: 'res', t: 'Con resolución', test: r => this.resOk(r) },
     { k: 'eje', t: 'En ejecución', test: r => this.enEjecucion(r) }
   ];
 
   FONDO_COLORS = ['#0B2545', '#0E7C86', '#315D88', '#B77900', '#5B2A86', '#2E7D32', '#8C5A2B', '#6B7A8D'];
 
+  /* Datos de demostración. Usan el VOCABULARIO CANÓNICO del proceso (los mismos
+     literales que emite la planilla) para no enseñar un idioma que después no
+     existe, e incluyen a propósito los tres casos del tri-estado y un valor
+     fuera de dominio, que es lo que hay que poder ver en pantalla. */
   DEMO = [
-    { nPostulacion: '1', nombreProyecto: 'Talento juvenil regional en la capital mundial de la música, Viena 2026', institucion: 'Fundación Jóvenes Músicos Chile', comuna: 'Viña del Mar', fondo: 'Cultura', categoria: 'Caso Emblemático', monto: 30920000, etapa: 'Priorización CORE', estadoFactibilidad: 'Favorable', evaluadorFactibilidad: 'C. Molina', dictamenAC: 'Evaluación técnica favorable', estadoAC: 'Favorable', evaluadorAC: 'P. Salas', rondaAC: '2', observacionesAbiertasAC: 0, observacionesCerradasAC: 5, fechaEvaluacionAC: '2026-06-12', acuerdoCore: 'Sí', pronunciamiento: 'Aprobado', acuerdoCoreNumero: '184/2026', acuerdoCoreFecha: '2026-07-02', resolucionNumero: 'RE 1204', resolucionFecha: '2026-07-15', fechaInicioEjecucion: '7/07/2026', fechaTerminoEjecucion: '30/07/2026', estadoEjecucion: 'En ejecución', alertas: [] },
-    { nPostulacion: '2', nombreProyecto: 'Semillero de campeones: renace Nahuel Rowing, Placilla', institucion: 'Club Deportivo Social Nahuel Rowing', comuna: 'Valparaíso', fondo: 'Deporte', categoria: 'Caso Excepcional', monto: 46333000, etapa: 'Admisibilidad y Consistencia', estadoFactibilidad: 'Favorable', evaluadorFactibilidad: 'C. Molina', dictamenAC: 'Con observaciones', estadoAC: 'En observaciones', evaluadorAC: 'M. Toro', rondaAC: '1', observacionesAbiertasAC: 4, observacionesCerradasAC: 1, fechaEvaluacionAC: '2026-06-28', acuerdoCore: 'No', estadoEjecucion: '', fechaInicioEjecucion: '30/06/2026', fechaTerminoEjecucion: '21/12/2026', alertas: ['4 observaciones abiertas hace más de 15 días'] },
-    { nPostulacion: '3', nombreProyecto: 'Sportiva Italiana multicampeonas: básquetbol femenino 2026', institucion: 'Sociedad Sportiva Italiana', comuna: 'Valparaíso', fondo: 'Deporte', categoria: 'Caso Emblemático', monto: 39136800, etapa: 'Priorización CORE', estadoFactibilidad: 'Favorable', evaluadorFactibilidad: 'R. Pérez', dictamenAC: 'Evaluación técnica favorable', estadoAC: 'Favorable', evaluadorAC: 'M. Toro', rondaAC: '1', observacionesAbiertasAC: 0, observacionesCerradasAC: 3, fechaEvaluacionAC: '2026-06-20', acuerdoCore: 'Sí', pronunciamiento: 'Aprobado', acuerdoCoreNumero: '186/2026', acuerdoCoreFecha: '2026-07-02', resolucionNumero: '', fechaInicioEjecucion: '15/06/2026', fechaTerminoEjecucion: '30/12/2026', estadoEjecucion: 'Por iniciar', alertas: ['Acuerdo CORE sin resolución asociada'] },
-    { nPostulacion: '4', nombreProyecto: 'Festival Vilanova España', institucion: 'ONG Vivir Consentidos', comuna: 'Valparaíso', fondo: 'Cultura', categoria: 'Caso Emblemático', monto: 50000000, etapa: 'Factibilidad', estadoFactibilidad: '', evaluadorFactibilidad: '', dictamenAC: '', estadoAC: '', acuerdoCore: 'No', estadoEjecucion: '', alertas: ['Ficha incompleta: sin fecha de recepción ni código de postulación'] },
-    { nPostulacion: '5', nombreProyecto: 'Apoyo 15° Festival de Cine Ojo de Pescado', institucion: 'Corporación Cultural Ojo de Pescado', comuna: 'Valparaíso', fondo: 'Cultura', categoria: 'Caso Emblemático', monto: 33619700, etapa: 'Ejecución', estadoFactibilidad: 'Favorable', evaluadorFactibilidad: 'R. Pérez', dictamenAC: 'Evaluación técnica favorable', estadoAC: 'Favorable', evaluadorAC: 'P. Salas', rondaAC: '1', observacionesAbiertasAC: 0, observacionesCerradasAC: 2, fechaEvaluacionAC: '2026-06-05', acuerdoCore: 'Sí', pronunciamiento: 'Aprobado', acuerdoCoreNumero: '171/2026', acuerdoCoreFecha: '2026-06-18', resolucionNumero: 'RE 1150', resolucionFecha: '2026-06-30', fechaInicioEjecucion: '1/07/2026', fechaTerminoEjecucion: '31/10/2026', estadoEjecucion: 'En ejecución', alertas: [] },
-    { nPostulacion: '6', nombreProyecto: 'Valparaíso rumbo al torneo First Lego League Korea International 2026', institucion: 'Corporación Educacional Instituto del Mar', comuna: 'Valparaíso', fondo: 'Educación', categoria: 'Caso Emblemático', monto: 41420541, etapa: 'Admisibilidad y Consistencia', estadoFactibilidad: 'Favorable con observaciones', evaluadorFactibilidad: 'C. Molina', dictamenAC: 'En revisión', estadoAC: 'En revisión', evaluadorAC: 'P. Salas', rondaAC: '1', observacionesAbiertasAC: 2, observacionesCerradasAC: 0, fechaEvaluacionAC: '2026-07-10', acuerdoCore: 'No', estadoEjecucion: '', fechaInicioEjecucion: '1/09/2026', fechaTerminoEjecucion: '30/11/2026', alertas: [] },
-    { nPostulacion: '7', nombreProyecto: 'Escuela de invierno para monitores deportivos comunales', institucion: 'Corporación Municipal de Quillota', comuna: 'Quillota', fondo: 'Deporte', categoria: 'Estándar', monto: 18400000, etapa: 'No continúa', estadoFactibilidad: 'No factible', evaluadorFactibilidad: 'R. Pérez', dictamenAC: '', estadoAC: '', acuerdoCore: 'No', estadoEjecucion: '', alertas: ['Desestimado en factibilidad: sin respaldo de dominio del recinto'] },
-    { nPostulacion: '8', nombreProyecto: 'Circuito regional de orquestas escolares', institucion: 'Fundación Sonidos del Aconcagua', comuna: 'San Felipe', fondo: 'Cultura', categoria: 'Estándar', monto: 27750000, etapa: 'Ejecución', estadoFactibilidad: 'Favorable', evaluadorFactibilidad: 'C. Molina', dictamenAC: 'Evaluación técnica favorable', estadoAC: 'Favorable', evaluadorAC: 'M. Toro', rondaAC: '1', observacionesAbiertasAC: 0, observacionesCerradasAC: 1, fechaEvaluacionAC: '2026-05-22', acuerdoCore: 'Sí', pronunciamiento: 'Aprobado', acuerdoCoreNumero: '160/2026', acuerdoCoreFecha: '2026-06-04', resolucionNumero: 'RE 1098', resolucionFecha: '2026-06-20', fechaInicioEjecucion: '1/06/2026', fechaTerminoEjecucion: '30/09/2026', estadoEjecucion: 'Terminado', alertas: [] },
-    { nPostulacion: '9', nombreProyecto: 'Rescate patrimonial del muelle de Papudo', institucion: 'Agrupación Cultural Costa Norte', comuna: 'Papudo', fondo: 'Patrimonio', categoria: 'Caso Emblemático', monto: 22300000, etapa: 'Factibilidad', estadoFactibilidad: 'En revisión', evaluadorFactibilidad: 'R. Pérez', dictamenAC: '', estadoAC: '', acuerdoCore: 'No', estadoEjecucion: '', alertas: [] }
+    { nPostulacion: '1', nombreProyecto: 'Talento juvenil regional en la capital mundial de la música, Viena 2026', institucion: 'Fundación Jóvenes Músicos Chile', rutInstitucion: '65.100.200-1', comuna: 'Viña del Mar', fondo: 'Cultura', categoria: 'Caso Emblemático', monto: 30920000, etapa: 'Priorización CORE', estadoFactibilidad: 'HABILITAR FORMULACIÓN DE EXPEDIENTE', evaluadorFactibilidad: 'C. Molina', dictamenAC: 'EVALUACIÓN TÉCNICA FAVORABLE', estadoAC: 'Favorable', evaluadorAC: 'P. Salas', rondaAC: '2', observacionesAbiertasAC: 0, observacionesCerradasAC: 5, fechaEvaluacionAC: '2026-06-12', acuerdoCore: 'Sí', acuerdoCoreEstado: 'si', acuerdoCoreRaw: 'Sí', pronunciamiento: 'Aprobado', acuerdoCoreNumero: '184/2026', acuerdoCoreFecha: '2026-07-02', acuerdoCoreUrl: 'https://example.org/acuerdo-184', resolucionMarca: 'Sí', resolucionMarcaEstado: 'si', resolucionMarcaRaw: 'Sí', resolucionNumero: 'RE 1204', resolucionFecha: '2026-07-15', resolucionUrl: 'https://example.org/re-1204', fechaInicioEjecucion: '7/07/2026', fechaTerminoEjecucion: '30/07/2026', estadoEjecucion: 'En ejecución', alertas: [] },
+    { nPostulacion: '2', nombreProyecto: 'Semillero de campeones: renace Nahuel Rowing, Placilla', institucion: 'Club Deportivo Social Nahuel Rowing', rutInstitucion: '65.100.200-2', comuna: 'Valparaíso', fondo: 'Deporte', categoria: 'Caso Excepcional', monto: 46333000, etapa: 'Admisibilidad y Consistencia', estadoFactibilidad: 'HABILITAR FORMULACIÓN DE EXPEDIENTE', evaluadorFactibilidad: 'C. Molina', dictamenAC: 'CON OBSERVACIONES', estadoAC: 'En observaciones', evaluadorAC: 'M. Toro', rondaAC: '1', observacionesAbiertasAC: 4, observacionesCerradasAC: 1, fechaEvaluacionAC: '2026-06-28', acuerdoCore: 'No', acuerdoCoreEstado: 'no', acuerdoCoreRaw: 'No', resolucionMarca: 'No', resolucionMarcaEstado: 'no', resolucionMarcaRaw: 'No', estadoEjecucion: '', fechaInicioEjecucion: '30/06/2026', fechaTerminoEjecucion: '21/12/2026', alertas: ['4 observaciones abiertas hace más de 15 días'] },
+    { nPostulacion: '3', nombreProyecto: 'Sportiva Italiana multicampeonas: básquetbol femenino 2026', institucion: 'Sociedad Sportiva Italiana', rutInstitucion: '65.100.200-3', comuna: 'Valparaíso', fondo: 'Deporte', categoria: 'Caso Emblemático', monto: 39136800, etapa: 'Priorización CORE', estadoFactibilidad: 'HABILITAR FORMULACIÓN DE EXPEDIENTE', evaluadorFactibilidad: 'R. Pérez', dictamenAC: 'EVALUACIÓN TÉCNICA FAVORABLE', estadoAC: 'Favorable', evaluadorAC: 'M. Toro', rondaAC: '1', observacionesAbiertasAC: 0, observacionesCerradasAC: 3, fechaEvaluacionAC: '2026-06-20', acuerdoCore: 'Sí', acuerdoCoreEstado: 'si', acuerdoCoreRaw: 'SI', pronunciamiento: 'Aprobado', acuerdoCoreNumero: '186/2026', acuerdoCoreFecha: '2026-07-02', acuerdoCoreUrl: 'https://example.org/acuerdo-186', resolucionMarca: 'En tramitación', resolucionMarcaEstado: 'tramitacion', resolucionMarcaRaw: 'En tramitación', resolucionNumero: '', fechaInicioEjecucion: '15/06/2026', fechaTerminoEjecucion: '30/12/2026', estadoEjecucion: 'Por iniciar', alertas: [] },
+    { nPostulacion: '4', nombreProyecto: 'Festival Vilanova España', institucion: 'ONG Vivir Consentidos', rutInstitucion: '65.100.200-4', comuna: 'Valparaíso', fondo: 'Cultura', categoria: 'Caso Emblemático', monto: 50000000, etapa: 'Factibilidad', estadoFactibilidad: '', evaluadorFactibilidad: '', dictamenAC: '', estadoAC: '', acuerdoCore: '', acuerdoCoreEstado: 'vacio', acuerdoCoreRaw: '', estadoEjecucion: '', alertas: ['Ficha incompleta: sin fecha de recepción ni código de postulación'] },
+    { nPostulacion: '5', nombreProyecto: 'Apoyo 15° Festival de Cine Ojo de Pescado', institucion: 'Corporación Cultural Ojo de Pescado', rutInstitucion: '65.100.200-5', comuna: 'Valparaíso', fondo: 'Cultura', categoria: 'Caso Emblemático', monto: 33619700, etapa: 'Ejecución', estadoFactibilidad: 'HABILITAR FORMULACIÓN DE EXPEDIENTE', evaluadorFactibilidad: 'R. Pérez', dictamenAC: 'EVALUACIÓN TÉCNICA FAVORABLE', estadoAC: 'Favorable', evaluadorAC: 'P. Salas', rondaAC: '1', observacionesAbiertasAC: 0, observacionesCerradasAC: 2, fechaEvaluacionAC: '2026-06-05', acuerdoCore: 'Sí', acuerdoCoreEstado: 'si', acuerdoCoreRaw: 'Sí', pronunciamiento: 'Aprobado', acuerdoCoreNumero: '171/2026', acuerdoCoreFecha: '2026-06-18', resolucionMarca: 'Sí', resolucionMarcaEstado: 'si', resolucionMarcaRaw: 'Sí', resolucionNumero: 'RE 1150', resolucionFecha: '2026-06-30', resolucionUrl: 'https://example.org/re-1150', fechaInicioEjecucion: '1/07/2026', fechaTerminoEjecucion: '31/10/2026', estadoEjecucion: 'En ejecución', alertas: [] },
+    { nPostulacion: '6', nombreProyecto: 'Valparaíso rumbo al torneo First Lego League Korea International 2026', institucion: 'Corporación Educacional Instituto del Mar', rutInstitucion: '65.100.200-6', comuna: 'Valparaíso', fondo: 'Educación', categoria: 'Caso Emblemático', monto: 41420541, etapa: 'Admisibilidad y Consistencia', estadoFactibilidad: 'OBSERVAR PARA SUBSANACIÓN', evaluadorFactibilidad: 'C. Molina', dictamenAC: 'REVISIÓN PENDIENTE', estadoAC: 'En revisión', evaluadorAC: 'P. Salas', rondaAC: '1', observacionesAbiertasAC: 2, observacionesCerradasAC: 0, fechaEvaluacionAC: '2026-07-10', acuerdoCore: 'En tramitación', acuerdoCoreEstado: 'tramitacion', acuerdoCoreRaw: 'en trámite', estadoEjecucion: '', fechaInicioEjecucion: '1/09/2026', fechaTerminoEjecucion: '30/11/2026', alertas: [] },
+    { nPostulacion: '7', nombreProyecto: 'Escuela de invierno para monitores deportivos comunales', institucion: 'Corporación Municipal de Quillota', rutInstitucion: '65.100.200-7', comuna: 'Quillota', fondo: 'Deporte', categoria: 'Estándar', monto: 18400000, etapa: 'No continúa', estadoFactibilidad: 'DESESTIMAR', evaluadorFactibilidad: 'R. Pérez', dictamenAC: '', estadoAC: '', acuerdoCore: 'No', acuerdoCoreEstado: 'no', acuerdoCoreRaw: 'No', estadoEjecucion: '', alertas: ['Desestimado en factibilidad: sin respaldo de dominio del recinto'] },
+    { nPostulacion: '8', nombreProyecto: 'Circuito regional de orquestas escolares', institucion: 'Fundación Sonidos del Aconcagua', rutInstitucion: '65.100.200-8', comuna: 'San Felipe', fondo: 'Cultura', categoria: 'Estándar', monto: 27750000, etapa: 'Ejecución', estadoFactibilidad: 'HABILITAR FORMULACIÓN DE EXPEDIENTE', evaluadorFactibilidad: 'C. Molina', dictamenAC: 'EVALUACIÓN TÉCNICA FAVORABLE', estadoAC: 'Favorable', evaluadorAC: 'M. Toro', rondaAC: '1', observacionesAbiertasAC: 0, observacionesCerradasAC: 1, fechaEvaluacionAC: '2026-05-22', acuerdoCore: 'Sí', acuerdoCoreEstado: 'si', acuerdoCoreRaw: 'Sí', pronunciamiento: 'Aprobado', acuerdoCoreNumero: '160/2026', acuerdoCoreFecha: '2026-06-04', resolucionMarca: 'Sí', resolucionMarcaEstado: 'si', resolucionMarcaRaw: 'Sí', resolucionNumero: 'RE 1098', resolucionFecha: '2026-06-20', fechaInicioEjecucion: '1/06/2026', fechaTerminoEjecucion: '30/09/2026', estadoEjecucion: 'Terminado', alertas: [] },
+    { nPostulacion: '9', nombreProyecto: 'Rescate patrimonial del muelle de Papudo', institucion: 'Agrupación Cultural Costa Norte', rutInstitucion: '65.100.200-9', comuna: 'Papudo', fondo: 'Patrimonio', categoria: 'Caso Emblemático', monto: 22300000, etapa: 'Factibilidad', estadoFactibilidad: 'EVALUACIÓN PENDIENTE', evaluadorFactibilidad: 'R. Pérez', dictamenAC: '', estadoAC: '', acuerdoCore: '', acuerdoCoreEstado: 'desconocido', acuerdoCoreRaw: 'se vera en la proxima sesion', estadoEjecucion: '', alertas: [] }
   ];
 
   PLAZOS = [
@@ -511,13 +551,162 @@ class Component extends DCLogic {
     { value: 'sinfechas', label: 'Sin fechas informadas', test: r => this.dias(r.fechaInicioEjecucion) === null && this.dias(r.fechaTerminoEjecucion) === null }
   ];
 
+  /* ---------------------------------------------------------------------------
+     Vocabulario canónico del proceso. Todo lo que decide un CONTEO se compara
+     por igualdad EXACTA contra estos literales ya normalizados (sin tildes, en
+     minúsculas, con el espacio interno colapsado). La coincidencia parcial sólo
+     sobrevive como último recurso, para el texto libre heredado.
+     --------------------------------------------------------------------------- */
+  LIT_FACT_FAVORABLE = ['habilitar formulacion de expediente', 'factible tecnicamente, habilitado para formulacion de expediente'];
+  LIT_FACT = ['habilitar formulacion de expediente', 'factible tecnicamente, habilitado para formulacion de expediente', 'observar para subsanacion', 'desestimar', 'evaluacion pendiente'];
+  LIT_AC_FAVORABLE = 'evaluacion tecnica favorable';
+  LIT_AC = ['evaluacion tecnica favorable', 'con observaciones', 'desestimado por no subsanacion', 'revision pendiente'];
+
+  /* Dominio de las marcas Sí / No / En tramitación (contrato con Code.gs).
+     Las tres listas son IDÉNTICAS a MARCA_SI_ / MARCA_NO_ / MARCA_TRAMITACION_
+     de la capa de datos, y tienen que seguir siéndolo: un dominio cerrado
+     definido dos veces con vocabularios distintos no es un dominio cerrado. La
+     versión anterior aceptaba acá 's', 'yes', 'n', 'tramitacion', 'tramite' y
+     'en tramitacion core', que Code.gs devuelve como 'desconocido'; con eso, un
+     valor que la capa de datos habría marcado como inconsistencia visible se
+     convertía en una marca válida —y 'Tramitación' pasaba a contar como «En
+     tramitación»— en cuanto el payload no traía el estado declarado (despliegue
+     anterior del Web App, o los datos de demostración). */
+  MARCA_ESTADOS = ['si', 'no', 'tramitacion', 'vacio', 'desconocido'];
+  MARCA_LABEL = { si: 'Sí', no: 'No', tramitacion: 'En tramitación', vacio: '', desconocido: '' };
+  MARCA_SI = ['si', 'true', 'verdadero', '1', 'x'];
+  MARCA_NO = ['no', 'false', 'falso', '0'];
+  MARCA_TRAMITE = ['en tramitacion', 'en tramite'];
+
   clean(v) { return v == null ? '' : String(v).trim(); }
   has(v) { return this.clean(v) !== ''; }
-  norm(v) { return this.clean(v).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
-  yesNo(v) { const n = this.norm(v); if (['si', 'true', '1', 'x'].includes(n)) return 'Sí'; if (['no', 'false', '0'].includes(n)) return 'No'; return ''; }
-  coreOk(r) { return this.yesNo(r.acuerdoCore) === 'Sí'; }
-  acFav(r) { return this.norm(r.dictamenAC) === 'evaluacion tecnica favorable' && this.norm(r.estadoAC) === 'favorable'; }
-  stopped(r) { return /desestim|desfavorable|inadmis|no factible|no contin|rechaz/.test(this.norm([r.estadoFactibilidad, r.estadoAC, r.dictamenAC, r.etapa].join(' '))); }
+  /**
+   * Normaliza para comparar: quita tildes, pasa a minúsculas y —esto es lo que
+   * faltaba— colapsa el espacio interno y el espacio duro (NBSP). Sin ese
+   * colapso, «EVALUACIÓN  TÉCNICA FAVORABLE» (doble espacio, o un NBSP pegado
+   * desde Sheets) deja de ser igual a su literal canónico y el proyecto
+   * desaparece del conteo sin dejar rastro. Como todo el contrato compara por
+   * igualdad exacta tras normalizar, esto es un requisito, no una comodidad.
+   */
+  norm(v) {
+    return this.clean(v).replace(/\u00a0/g, ' ').replace(/\s+/g, ' ')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+
+  /* Vocabulario del signo. La NEGACIÓN es una regla, no una lista de frases:
+     enumerar «no factible», «no avanza»… dejaba pasar todo negativo redactado
+     con otra palabra —«NO HABILITAR FORMULACIÓN», «Sin pronunciamiento
+     favorable», «Factible: NO»—, que caía en la rama positiva y sumaba al KPI.
+     Es la misma definición que corre en Code.gs (signo_): un solo criterio para
+     las dos capas, o el tablero afirma dos cosas sobre la misma fila. */
+  NEGADORES = 'no|sin|nunca|jamas|tampoco';
+  TERMINOS_POSITIVOS = 'favorable|habilitar|habilitad|factible|cumple|priorizad|aprobad|avanza|terminad';
+  RE_NEGATIVO_EXPLICITO = /desestim|desfavorable|inadmis|rechaz|no factible|no es factible|no contin|no avanza|no subsan|no admisible|no elegible/;
+  /* El relleno entre el negador y el término son PALABRAS, no «cualquier cosa»:
+     con \S+ la negación cruzaba la coma y «sin observaciones, habilitado» —que
+     es un positivo— caía en negativo. Un signo de puntuación cierra la cláusula
+     y con ella el alcance de la negación. Y [a-z]* completa la palabra del
+     término («habilitad» → «habilitado») antes de buscar el negador final, sin
+     lo cual «Habilitado NO» se escapaba a positivo. */
+  RE_NEGACION_ANTEPUESTA = new RegExp('\\b(?:no|sin|nunca|jamas|tampoco)\\b(?:\\s+[a-z0-9]+){0,2}?\\s+(?:favorable|habilitar|habilitad|factible|cumple|priorizad|aprobad|avanza|terminad)');
+  RE_NEGACION_POSPUESTA = new RegExp('(?:favorable|habilitar|habilitad|factible|cumple|priorizad|aprobad|avanza|terminad)[a-z]*\\b[^a-z0-9]{0,4}(?:no|sin|nunca|jamas|tampoco)\\s*$');
+  RE_PENDIENTE = /observ|pendiente|revision|espera|subsan|incomplet|tramit/;
+  RE_POSITIVO = /favorable|habilitar|habilitad|factible|cumple|priorizad|aprobad|avanza|terminad/;
+
+  /**
+   * Signo de un estado escrito en TEXTO LIBRE. Los literales canónicos se
+   * resuelven por igualdad y no llegan acá; esto es el último recurso para las
+   * planillas heredadas.
+   *
+   * Lo NEGATIVO se evalúa SIEMPRE primero, y en tres formas: el término que ya
+   * es negativo por sí mismo (desestimado, desfavorable), el negador ANTES de un
+   * término positivo hasta dos palabras de por medio («no habilitar», «sin
+   * pronunciamiento favorable»), y el negador AL FINAL («Factible: NO»). El
+   * sesgo es deliberado: ante la duda, un texto libre no acredita un hito.
+   *
+   * Criterio único de tonoPill(), stopped() y los hitos: no pueden divergir.
+   */
+  signo(v) {
+    const n = this.norm(v);
+    if (!n) return 'vacio';
+    if (this.RE_NEGATIVO_EXPLICITO.test(n)) return 'negativo';
+    if (this.RE_NEGACION_ANTEPUESTA.test(n) || this.RE_NEGACION_POSPUESTA.test(n)) return 'negativo';
+    if (this.RE_PENDIENTE.test(n)) return 'pendiente';
+    if (this.RE_POSITIVO.test(n)) return 'positivo';
+    return 'otro';
+  }
+
+  /** Factibilidad habilitante (hito 2). Literal canónico primero; texto libre después. */
+  factFav(r) {
+    const n = this.norm(r.estadoFactibilidad);
+    if (!n) return false;
+    if (this.LIT_FACT_FAVORABLE.includes(n)) return true;
+    if (this.LIT_FACT.includes(n)) return false;   // otro literal canónico: NO es favorable
+    return this.signo(n) === 'positivo';           // planillas anteriores, texto libre
+  }
+
+  /**
+   * A&C favorable (hito 4). Manda el DICTAMEN (col. L) y sólo el dictamen:
+   * «Estado proyecto» es una columna derivada del propio dictamen, así que
+   * exigir que ambas coincidieran nunca podía sumar — sólo restar en silencio.
+   */
+  acFav(r) {
+    const n = this.norm(r.dictamenAC);
+    if (!n) return false;
+    if (n === this.LIT_AC_FAVORABLE) return true;
+    if (this.LIT_AC.includes(n)) return false;
+    return this.signo(n) === 'positivo';
+  }
+
+  /** Clasifica el valor crudo de una marca. Nunca devuelve vacío por «no entendí». */
+  marcaEstado(v) {
+    const n = this.norm(v);
+    if (!n) return 'vacio';
+    if (this.MARCA_SI.includes(n)) return 'si';
+    if (this.MARCA_NO.includes(n)) return 'no';
+    if (this.MARCA_TRAMITE.includes(n)) return 'tramitacion';
+    return 'desconocido';
+  }
+
+  /**
+   * Etiqueta canónica de una marca. Es IDEMPOTENTE —yesNo(yesNo(x)) === yesNo(x)—
+   * y conserva el texto original cuando cae fuera del dominio, de modo que
+   * aplicarla dos veces no borre nada. Antes devolvía '' para todo lo que no
+   * fuera sí/no, y así «En tramitación» quedaba indistinguible de vacío (D4).
+   */
+  yesNo(v) { const e = this.marcaEstado(v); return e === 'desconocido' ? this.clean(v) : this.MARCA_LABEL[e]; }
+
+  /**
+   * Lee una marca del contrato de datos: prefiere el estado que declara la capa
+   * de datos (`<base>Estado`) y, si no viene, lo deduce del crudo (`<base>Raw`,
+   * o de la propia etiqueta). Devuelve {estado, raw, label}.
+   *
+   * La etiqueta de un 'desconocido' es su texto original, que es lo que hay que
+   * poder ir a corregir en la planilla. Cuando el crudo llega vacío —un estado
+   * que Code.gs no produce hoy, pero que otra fuente podría— la etiqueta NO
+   * puede quedar vacía: un fuera de dominio terminaba rotulado «Sin priorizar»,
+   * exactamente igual que un «No» y que una celda sin llenar, y el único rastro
+   * era el color. LABEL_SIN_VALOR lo dice con palabras.
+   */
+  LABEL_SIN_VALOR = 'Valor no legible';
+
+  marca(r, base) {
+    const declarado = this.norm(r[base + 'Estado']);
+    const crudo = this.has(r[base + 'Raw']) ? r[base + 'Raw'] : r[base];
+    const estado = this.MARCA_ESTADOS.includes(declarado) ? declarado : this.marcaEstado(crudo);
+    return {
+      estado, raw: this.clean(crudo),
+      label: estado === 'desconocido' ? (this.clean(crudo) || this.LABEL_SIN_VALOR) : this.MARCA_LABEL[estado]
+    };
+  }
+
+  coreOk(r) { return this.marca(r, 'acuerdoCore').estado === 'si'; }
+  coreTramite(r) { return this.marca(r, 'acuerdoCore').estado === 'tramitacion'; }
+  /* D3: la marca acredita el acto administrativo; el N° y el enlace lo documentan. */
+  resOk(r) { return this.marca(r, 'resolucionMarca').estado === 'si'; }
+  resTramite(r) { return this.marca(r, 'resolucionMarca').estado === 'tramitacion'; }
+
+  stopped(r) { return [r.estadoFactibilidad, r.estadoAC, r.dictamenAC, r.etapa].some(v => this.signo(v) === 'negativo'); }
   parseMoney(v) { if (typeof v === 'number') return v; const s = this.clean(v).replace(/[^0-9,-]/g, '').replace(/\./g, '').replace(',', '.'); const n = Number(s); return Number.isFinite(n) ? n : 0; }
   money(n) { return Number(n || 0).toLocaleString('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }); }
   short(n) {
@@ -527,13 +716,25 @@ class Component extends DCLogic {
     if (v >= 1e3) return '$' + Math.round(v / 1e3) + 'k';
     return '$' + v;
   }
+  /**
+   * Fecha desde texto. Dos correcciones importantes:
+   *  1. las ISO cortas («2026-07-20») se construían con `new Date(s)`, que las
+   *     interpreta en UTC: en Chile toda fecha de acuerdo CORE y de resolución
+   *     se imprimía UN DÍA ANTES y `dias()` se corría un día;
+   *  2. «20-07-2026» y «20.07.2026» —habituales en la planilla— caían a null y
+   *     el proyecto desaparecía del Gantt como si no tuviera fechas.
+   * Todas las ramas construyen fecha LOCAL, para que se puedan comparar entre sí.
+   */
   parseDate(v) {
+    if (v instanceof Date) return isNaN(v.getTime()) ? null : new Date(v.getFullYear(), v.getMonth(), v.getDate());
     if (!this.has(v)) return null;
     const s = this.clean(v);
-    const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T ][\d:.]+.*)?$/);
+    if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+    m = s.match(/^(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{4})$/);
     if (m) return new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
     const d = new Date(s);
-    return isNaN(d) ? null : d;
+    return isNaN(d.getTime()) ? null : d;
   }
   fmtDate(v) { const d = this.parseDate(v); return d ? d.toLocaleDateString('es-CL') : '—'; }
 
@@ -545,7 +746,28 @@ class Component extends DCLogic {
     return Math.round((d - hoy) / 86400000);
   }
 
-  cerrado(r) { return /terminad|cerrad|finaliz/i.test(this.clean(r.estadoEjecucion)); }
+  /**
+   * Estado de ejecución en un vocabulario cerrado y EXHAUSTIVO. Lo no iniciado y
+   * lo terminado se evalúan ANTES que lo positivo, porque «No iniciado» contiene
+   * «iniciad», «Ejecución no iniciada» contiene «ejecución» y «Sin ejecución»
+   * contiene «ejecución»: los tres se contaban como en operación (misma familia
+   * que D1). Devuelve siempre uno de cinco valores, así que ningún proyecto
+   * puede quedar fuera de la dona ni del total.
+   */
+  ejeEstado(r) {
+    const n = this.norm(r.estadoEjecucion);
+    if (!n) return this.has(r.fechaInicioEjecucion) ? 'porIniciar' : 'sinInformar';
+    if (/no terminad|no finaliz|sin terminar/.test(n)) return 'ejecucion';
+    if (/terminad|finaliz|cerrad|concluid|ejecutad/.test(n)) return 'terminado';
+    if (/no inicia|por inicia|sin inicia|no ha inicia|pendiente|sin ejecu|no ejecu|proxim|programad/.test(n)) return 'porIniciar';
+    if (/ejecucion|en curso|iniciad|en marcha|ejecutand|desarroll/.test(n)) return 'ejecucion';
+    return 'otro';   // p. ej. «Suspendido» o «Convenio en trámite»: se muestra tal cual
+  }
+
+  EJE_LABEL = { ejecucion: 'En ejecución', porIniciar: 'Por iniciar', terminado: 'Terminado', sinInformar: 'Sin informar', otro: 'Otro estado declarado' };
+  EJE_COLOR = { ejecucion: '#0E7C86', porIniciar: '#B77900', terminado: '#546E7A', sinInformar: '#CBD5E1', otro: '#8C5A2B' };
+
+  cerrado(r) { return this.ejeEstado(r) === 'terminado'; }
 
   /* Proximidad: sólo se habla de vencimiento cuando la ejecución está declarada;
      si no, las fechas son las planificadas en la postulación. */
@@ -567,14 +789,72 @@ class Component extends DCLogic {
     return this.props.apiUrl || p || 'https://script.google.com/macros/s/AKfycbzu3VY4_WHV66VQiDPZxK-AISko4sTtGmCVDtrxzJ4VbIY4URVSfHMP8NEfLju7NqE4/exec';
   }
 
+  /* Los filtros de cartera, en una sola lista: la usan el selector de alcance,
+     la suspensión durante la impresión y la restauración posterior. */
+  FILTROS = ['q', 'etapa', 'fondo', 'comuna', 'evaluador', 'hito', 'plazo'];
+
+  filtrosVigentes() { const o = {}; this.FILTROS.forEach(k => { o[k] = this.state[k]; }); return o; }
+  sinFiltros() { const o = {}; this.FILTROS.forEach(k => { o[k] = ''; }); return o; }
+
   componentDidMount() {
     const p = new URLSearchParams(location.search);
     const patch = {};
-    ['q', 'etapa', 'fondo', 'comuna', 'evaluador', 'hito', 'plazo', 'view'].forEach(k => { const v = p.get(k); if (v) patch[k] = v; });
+    this.FILTROS.concat(['view']).forEach(k => { const v = p.get(k); if (v) patch[k] = v; });
     if (this.props.vistaInicial && !patch.view) patch.view = this.props.vistaInicial;
     if (Object.keys(patch).length) this.setState(patch);
+    this.escucharImpresion(true);
     this.load();
   }
+
+  componentWillUnmount() { this.escucharImpresion(false); }
+
+  /**
+   * Ctrl+P, Archivo → Imprimir y cualquier impresión programada NO pasan por el
+   * botón: si la corrección de alcance vive sólo dentro de ese handler, esas
+   * rutas imprimen otra cosa. `beforeprint` es el punto en que el documento
+   * todavía puede cambiar antes de que el navegador tome la instantánea, así que
+   * la corrección se engancha ahí y el botón deja de ser la única puerta.
+   */
+  escucharImpresion(activar) {
+    const w = typeof window !== 'undefined' ? window : null;
+    if (!w || typeof w.addEventListener !== 'function') return;
+    if (activar) {
+      w.addEventListener('beforeprint', this.onBeforePrint);
+      w.addEventListener('afterprint', this.onAfterPrint);
+    } else {
+      w.removeEventListener('beforeprint', this.onBeforePrint);
+      w.removeEventListener('afterprint', this.onAfterPrint);
+    }
+  }
+
+  /**
+   * Cambio de estado COMMITEADO antes de devolver. Un setState normal se agenda
+   * en microtarea y print() bloquea antes de que corra: la página se fotografía
+   * sin el cambio. flushSync es la única garantía. Devuelve si pudo garantizarlo;
+   * cuando no puede, no se suspende nada y el encabezado —que declara el
+   * contenido EFECTIVAMENTE rendido— sigue diciendo la verdad.
+   */
+  aplicarSincrono(patch) {
+    const RD = (typeof window !== 'undefined' && window.ReactDOM) || null;
+    if (!RD || typeof RD.flushSync !== 'function') return false;
+    RD.flushSync(() => this.setState(patch));
+    return true;
+  }
+
+  onBeforePrint = () => {
+    const S = this.state;
+    if (S.filtrosSuspendidos) return;                 // el botón ya suspendió
+    if (S.alcanceExport !== 'todos') return;
+    if (!this.filtrosActivos().length) return;
+    this.aplicarSincrono(Object.assign(this.sinFiltros(), { filtrosSuspendidos: this.filtrosVigentes() }));
+  };
+
+  onAfterPrint = () => {
+    const previo = this.state.filtrosSuspendidos;
+    if (!previo) return;
+    const patch = Object.assign({ filtrosSuspendidos: null }, previo);
+    if (!this.aplicarSincrono(patch)) this.setState(patch);
+  };
 
   syncUrl(next) {
     try {
@@ -608,7 +888,13 @@ class Component extends DCLogic {
     try {
       const json = await this.jsonp(this.api());
       if (json.ok === false) throw new Error(json.error || 'Error del Apps Script');
-      const raw = (Array.isArray(json.data) ? json.data : []).map(r => ({ ...r, acuerdoCore: this.yesNo(r.acuerdoCore) }));
+      /* D4 — antes esta línea hacía `acuerdoCore: this.yesNo(r.acuerdoCore)`, y como
+         yesNo() devolvía '' para todo lo que no fuera sí/no, «En tramitación» y
+         cualquier valor fuera de dominio quedaban BORRADOS antes de que nada
+         pudiera mostrarlos: ni la columna, ni el buscador, ni el CSV los veían.
+         Ahora la fila entra tal cual llega y las marcas se leen a demanda con
+         marca(), que conserva el crudo y el estado declarado por Code.gs. */
+      const raw = Array.isArray(json.data) ? json.data.slice() : [];
       // Avisos no fatales del Apps Script (p. ej. una hoja ausente): se muestran
       // sin descartar los datos que sí llegaron.
       const avisos = Array.isArray(json.avisos) ? json.avisos.filter(a => this.has(a)) : [];
@@ -632,17 +918,45 @@ class Component extends DCLogic {
       if (this.state.evaluador && this.clean(r.evaluadorFactibilidad) !== this.state.evaluador && this.clean(r.evaluadorAC) !== this.state.evaluador) return false;
       if (mi >= 0 && !this.MILESTONES[mi].test(r)) return false;
       if (this.state.plazo) { const pz = this.PLAZOS.find(x => x.value === this.state.plazo); if (pz && pz.test && !pz.test(r)) return false; }
-      if (q && !this.norm(JSON.stringify(r)).includes(q)) return false;
+      if (q && !this.norm(this.textoBuscable(r)).includes(q)) return false;
       return true;
     });
   }
 
+  /**
+   * Campos por los que busca la barra de búsqueda. Antes se serializaba la fila
+   * entera con JSON.stringify, así que «comuna», «fondo» o «core» —que son
+   * NOMBRES de propiedad— devolvían la cartera completa, mientras que el monto
+   * tal como se ve en pantalla no encontraba nada. Acá van sólo valores, más el
+   * monto formateado y las marcas con su crudo, para que buscar «tramit»
+   * encuentre lo que está en tramitación.
+   */
+  textoBuscable(r) {
+    const core = this.marca(r, 'acuerdoCore'), res = this.marca(r, 'resolucionMarca');
+    return [
+      r.nPostulacion, r.nombreProyecto, r.institucion, r.rutInstitucion, r.comuna, r.fondo,
+      r.categoria, r.etapa, r.estadoFactibilidad, r.evaluadorFactibilidad, r.dictamenAC,
+      r.estadoAC, r.evaluadorAC, r.pronunciamiento, r.acuerdoCoreNumero, r.resolucionNumero,
+      r.estadoEjecucion, r.observacionesFactibilidad, r.observacionesAC, r.resumen, r.comentario,
+      core.label, core.raw, res.label, res.raw,
+      this.money(this.parseMoney(r.monto)), String(this.parseMoney(r.monto)),
+      this.alerts(r).join(' '), this.inconsistencias(r).join(' ')
+    ].map(v => this.clean(v)).filter(Boolean).join(' ');
+  }
+
+  /**
+   * Hito 7. «Llegó a ejecución» incluye lo terminado —un proyecto cerrado sí
+   * ejecutó—, pero ya NO incluye «No iniciado» ni «Sin ejecución», que la
+   * versión anterior contaba como en operación. El respaldo cuando no hay estado
+   * declarado es la MARCA de resolución (D3), no la mera presencia de un N° o de
+   * un enlace: un enlace suelto no acredita que el acto exista.
+   */
   enEjecucion(r) {
-    const e = this.clean(r.estadoEjecucion);
-    if (/ejecuci[oó]n|en curso|iniciad|terminad|finaliz|cerrad/i.test(e)) return true;
-    const conRes = this.has(r.resolucionUrl) || this.has(r.resolucionNumero);
+    const e = this.ejeEstado(r);
+    if (e === 'ejecucion' || e === 'terminado') return true;
+    if (e === 'otro') return false;
     const ini = this.parseDate(r.fechaInicioEjecucion);
-    return conRes && !!ini && ini.getTime() <= Date.now();
+    return this.resOk(r) && !!ini && ini.getTime() <= Date.now();
   }
 
   /* Último hito CONTIGUO cumplido: se corta en el primero que falla, para no
@@ -674,19 +988,142 @@ class Component extends DCLogic {
 
   /**
    * Tono de píldora para el estado puntual de UNA etapa (no el global).
-   * Lo negativo se evalúa primero: «desfavorable» contiene «favorable» y
-   * «no factible» contiene «factible».
+   * Delega en signo(), que evalúa lo negativo primero: «desfavorable» contiene
+   * «favorable» y «no factible» contiene «factible». Un solo criterio para el
+   * color, para los hitos y para stopped(): así no pueden discrepar.
    */
   tonoPill(v) {
-    const n = this.norm(v);
-    if (!n) return { bg: '#F1F4F8', color: '#8A96A4' };
-    if (/desestim|desfavorable|inadmis|no factible|rechaz|no contin/.test(n)) return { bg: '#FFF1F1', color: '#9B1C1C' };
-    if (/observ|pendiente|revision|espera|subsan|incomplet/.test(n)) return { bg: '#FFF8E6', color: '#7A5300' };
-    if (/favorable|habilitar|factible|cumple|priorizad|terminad|aprobad|avanza/.test(n)) return { bg: '#EAF6EB', color: '#256128' };
+    const s = this.signo(v);
+    if (s === 'vacio') return { bg: '#F1F4F8', color: '#8A96A4' };
+    if (s === 'negativo') return { bg: '#FFF1F1', color: '#9B1C1C' };
+    if (s === 'pendiente') return { bg: '#FFF8E6', color: '#7A5300' };
+    if (s === 'positivo') return { bg: '#EAF6EB', color: '#256128' };
     return { bg: '#EEF1F5', color: '#546272' };
   }
 
-  alerts(r) { return Array.isArray(r.alertas) ? r.alertas.filter(a => this.has(a)) : (this.has(r.alertas) ? [this.clean(r.alertas)] : []); }
+  /** Tono de una marca tri-estado. El vacío NUNCA se pinta como un «No». */
+  tonoMarca(estado) {
+    if (estado === 'si') return { bg: '#F4EDFB', color: '#5B2A86' };
+    if (estado === 'tramitacion') return { bg: '#FFF8E6', color: '#7A5300' };
+    if (estado === 'no') return { bg: '#EEF1F5', color: '#546272' };
+    if (estado === 'desconocido') return { bg: '#FFF1F1', color: '#9B1C1C' };
+    return { bg: '#F1F4F8', color: '#8A96A4' };   // vacío: sin dato, no es un No
+  }
+
+  /**
+   * HITOS DEL PROYECTO, en el orden del proceso. Única definición para las
+   * reglas de coherencia; las claves y el criterio de cada una son los mismos de
+   * hitosDelProyecto_() en Code.gs.
+   */
+  hitos(r) {
+    return {
+      factibilidadEvaluada: this.has(r.estadoFactibilidad),
+      factibilidadHabilitada: this.factFav(r),
+      acEvaluada: this.has(r.dictamenAC) || this.has(r.estadoAC),
+      acDictamenFavorable: this.acFav(r),
+      corePriorizado: this.coreOk(r),
+      conResolucion: this.resOk(r),
+      enEjecucion: this.enEjecucion(r)
+    };
+  }
+
+  /**
+   * COHERENCIA ENTRE HITOS CONSECUTIVOS — marco general, no un caso suelto.
+   *
+   * Un proyecto no puede estar más adelante que su propia evaluación. La regla
+   * dice qué hito posterior está cumplido y cuál anterior no; el motor emite el
+   * mensaje. Agregar una regla es agregar una línea de datos.
+   *
+   * Es la MISMA tabla que REGLAS_COHERENCIA_HITOS_ de Code.gs, con los mismos
+   * ids y —esto es lo importante— los mismos mensajes LITERALES. La versión
+   * anterior reimplementaba a mano sólo la T4 y con otra redacción, así que el
+   * deduplicador de alerts() (que compara cadenas completas normalizadas) nunca
+   * encontraba la coincidencia y el mismo defecto se reportaba DOS VECES: en la
+   * pestaña Alertas, en el CSV y en el .docx. Que el texto sea idéntico no es
+   * cosmética: es la condición para que la deduplicación funcione.
+   *
+   * Vive también acá, y no sólo en la capa de datos, porque sin la Web App —modo
+   * demostración, o el Web App caído— el tablero seguiría mostrando la cartera y
+   * sin esto las cuatro reglas desaparecerían en silencio.
+   */
+  REGLAS_COHERENCIA = [
+    {
+      id: 'ac-favorable-sin-factibilidad-habilitada',
+      previo: 'factibilidadHabilitada',
+      siguiente: 'acDictamenFavorable',
+      mensaje: 'Dictamen A&C favorable, pero Factibilidad no dice «HABILITAR FORMULACIÓN DE EXPEDIENTE».'
+    },
+    {
+      id: 'core-sin-ac-favorable',
+      previo: 'acDictamenFavorable',
+      siguiente: 'corePriorizado',
+      mensaje: 'Priorizado por el CORE sin dictamen A&C favorable.'
+    },
+    {
+      id: 'resolucion-sin-core',
+      previo: 'corePriorizado',
+      siguiente: 'conResolucion',
+      mensaje: 'Tiene resolución aprobatoria pero no figura acuerdo CORE.'
+    },
+    {
+      id: 'ejecucion-sin-resolucion',
+      previo: 'conResolucion',
+      siguiente: 'enEjecucion',
+      mensaje: 'Aparece en ejecución sin resolución aprobatoria registrada.'
+    }
+  ];
+
+  /** Motor de la tabla REGLAS_COHERENCIA. */
+  alertasDerivadas(r) {
+    const h = this.hitos(r);
+    return this.REGLAS_COHERENCIA.filter(x => h[x.siguiente] && !h[x.previo]).map(x => x.mensaje);
+  }
+
+  alerts(r) {
+    const base = Array.isArray(r.alertas)
+      ? r.alertas.filter(a => this.has(a)).map(a => this.clean(a))
+      : (this.has(r.alertas) ? [this.clean(r.alertas)] : []);
+    // Sin duplicar lo que la capa de datos ya dijo con otras palabras exactas.
+    return base.concat(this.alertasDerivadas(r).filter(t => !base.some(b => this.norm(b) === this.norm(t))));
+  }
+
+  /**
+   * Inconsistencias de DATOS (brief T7). Un valor fuera de dominio jamás puede
+   * traducirse en un proyecto ausente: se muestra, se cuenta aparte y se nombra.
+   * Junta lo que declara el contrato (`inconsistenciasDatos`) con lo que sólo es
+   * visible desde acá, que es el desajuste entre una MARCA y sus respaldos.
+   */
+  inconsistencias(r) {
+    const out = Array.isArray(r.inconsistenciasDatos)
+      ? r.inconsistenciasDatos.filter(x => this.has(x)).map(x => this.clean(x))
+      : (this.has(r.inconsistenciasDatos) ? [this.clean(r.inconsistenciasDatos)] : []);
+    const core = this.marca(r, 'acuerdoCore'), res = this.marca(r, 'resolucionMarca');
+    if (core.estado === 'desconocido') {
+      out.push('Acuerdo CORE con valor fuera de dominio: «' + core.raw + '». Se esperaba Sí, No o En tramitación.');
+    }
+    if (res.estado === 'desconocido') {
+      out.push('Resolución aprobatoria con valor fuera de dominio: «' + res.raw + '». Se esperaba Sí, No o En tramitación.');
+    }
+    if (core.estado === 'vacio' && (this.has(r.acuerdoCoreNumero) || this.has(r.acuerdoCoreUrl))) {
+      out.push('Hay N° o enlace de acuerdo CORE, pero la marca de acuerdo CORE está vacía: el proyecto no se cuenta como priorizado.');
+    }
+    if (res.estado === 'vacio' && (this.has(r.resolucionNumero) || this.has(r.resolucionUrl))) {
+      out.push('Hay N° o enlace de resolución, pero la marca de resolución aprobatoria está vacía: el proyecto no se cuenta como «con resolución».');
+    }
+    if (core.estado === 'si' && !this.has(r.acuerdoCoreNumero) && !this.has(r.acuerdoCoreUrl)) {
+      out.push('La marca declara acuerdo CORE, pero no hay N° ni enlace de acuerdo registrado.');
+    }
+    if (res.estado === 'si' && !this.has(r.resolucionNumero) && !this.has(r.resolucionUrl)) {
+      out.push('La marca declara resolución aprobatoria, pero no hay N° ni enlace de resolución registrado.');
+    }
+    if (res.estado === 'si' && core.estado !== 'si') {
+      out.push('Resolución aprobatoria declarada sin acuerdo CORE declarado (marca CORE: ' + (core.label || 'sin dato') + ').');
+    }
+    return out;
+  }
+
+  /** Todo lo que hay que mirar de un proyecto: alertas de proceso + datos rotos. */
+  tieneObservaciones(r) { return this.alerts(r).length > 0 || this.inconsistencias(r).length > 0; }
 
   hitoCells(r) {
     const stop = this.stopped(r);
@@ -699,19 +1136,879 @@ class Component extends DCLogic {
     });
   }
 
+  /** Fecha y hora legibles, con guarda: sin ella la cabecera imprimía «Invalid Date». */
+  fechaHora(v) {
+    if (!this.has(v)) return '';
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? this.clean(v) : d.toLocaleString('es-CL');
+  }
+
+  /**
+   * Conteos por hoja de origen — el pie donde se reportó el síntoma «CORE 0».
+   *
+   * Un cero ahí tiene varias causas y hay que poder distinguirlas SIN abrir
+   * proyecto por proyecto: que la hoja no traiga filas, que las filas no traigan
+   * marca, que todas digan «No», o que la columna esté llena de valores que el
+   * dominio no reconoce. La versión anterior sólo miraba 'si' y 'tramitacion', y
+   * las otras tres se colapsaban en el mismo literal «0 marcas» — precisamente
+   * la hipótesis viva del síntoma quedaba invisible.
+   *
+   * Los cinco estados salen de las filas que el tablero está mostrando, que es
+   * lo que el lector puede verificar; el conteo de FILAS viene de la hoja. Son
+   * dos preguntas distintas y por eso se imprimen separadas por «·».
+   */
+  fuentesTexto() {
+    const S = this.state;
+    const f = S.sources || {};
+    const n = {};
+    this.MARCA_ESTADOS.forEach(e => { n[e] = 0; });
+    S.raw.forEach(r => { const e = this.marca(r, 'acuerdoCore').estado; n[e] = (n[e] || 0) + 1; });
+
+    const partes = [];
+    if (n.si) partes.push(n.si + ' con acuerdo');
+    if (n.tramitacion) partes.push(n.tramitacion + ' en tramitación');
+    if (n.no) partes.push(n.no + ' con «No»');
+    if (n.desconocido) partes.push(n.desconocido + ' fuera de dominio');
+    if (n.vacio) partes.push(n.vacio + ' sin marca');
+
+    const filas = Number(f.priorizacionCore || 0);
+    const core = (filas ? filas + ' filas' : 'sin filas') + ' · ' +
+      (partes.length ? partes.join(' · ') : 'ninguna marca leída');
+    return 'Factibilidad ' + (f.factibilidad || 0) +
+      ' · A&C ' + (f.admisibilidadConsistencia || 0) +
+      ' · Priorización ' + core;
+  }
+
+  /* ===========================================================================
+     SALIDAS DOCUMENTALES — CSV, Word e impresión
+     ===========================================================================
+     Las tres comparten alcance (state.alcanceExport), orden y juego de columnas,
+     para que tres documentos generados en el mismo momento no puedan decir cosas
+     distintas. Todo es autocontenido: ni CDNs ni dependencias externas.
+     =========================================================================== */
+
+  /**
+   * Columnas de las salidas documentales. UNA sola lista para el CSV y para
+   * Word, de modo que «las mismas columnas» sea literal y no una promesa.
+   *   k      clave de la fila (o '_algo' cuando el valor es derivado)
+   *   t      rótulo
+   *   peso   ancho relativo en el documento Word
+   *   jc     alineación en Word
+   *   val    cómo se deriva el texto (por omisión, this.clean(r[k]))
+   *   docx   false = sólo va al CSV. Se excluyen los enlaces largos (en Word la
+   *          celda va enlazada, mostrar la URL cruda sólo estorba) y los estados
+   *          internos de las marcas, que en el CSV sirven para filtrar.
+   */
+  COLS_EXPORT = [
+    { k: 'nPostulacion', t: 'N°', peso: 5, fuente: 'Consolas' },
+    { k: 'nombreProyecto', t: 'Proyecto', peso: 19 },
+    { k: 'institucion', t: 'Institución', peso: 13 },
+    { k: 'rutInstitucion', t: 'RUT institución', peso: 6, docx: false },
+    { k: 'comuna', t: 'Comuna', peso: 7 },
+    { k: 'fondo', t: 'Fondo', peso: 6 },
+    { k: 'categoria', t: 'Categoría', peso: 7 },
+    { k: 'monto', t: 'Monto', peso: 8, jc: 'right', fuente: 'Consolas', val: 'monto' },
+    { k: 'etapa', t: 'Etapa', peso: 8 },
+    { k: 'estadoFactibilidad', t: 'Factibilidad', peso: 11 },
+    { k: 'evaluadorFactibilidad', t: 'Evaluador/a factibilidad', peso: 8 },
+    { k: 'dictamenAC', t: 'Dictamen A&C', peso: 11 },
+    { k: 'estadoAC', t: 'Estado A&C (derivado)', peso: 7, docx: false },
+    { k: 'evaluadorAC', t: 'Evaluador/a A&C', peso: 8 },
+    { k: 'rondaAC', t: 'Ronda A&C', peso: 4, docx: false },
+    { k: 'observacionesAbiertasAC', t: 'Observaciones abiertas', peso: 5, docx: false },
+    { k: 'fechaEvaluacionAC', t: 'Fecha evaluación A&C', peso: 6, jc: 'center', val: 'fecha', docx: false },
+    { k: 'pronunciamiento', t: 'Pronunciamiento', peso: 8, docx: false },
+    { k: '_marcaCore', t: 'Acuerdo CORE (marca)', peso: 6, jc: 'center', val: 'marcaCore' },
+    { k: '_estadoCore', t: 'Estado marca CORE', peso: 5, val: 'estadoCore', docx: false },
+    { k: 'acuerdoCoreNumero', t: 'N° acuerdo CORE', peso: 6 },
+    { k: 'acuerdoCoreFecha', t: 'Fecha acuerdo CORE', peso: 6, jc: 'center', val: 'fecha', docx: false },
+    { k: 'acuerdoCoreUrl', t: 'Enlace acuerdo CORE', peso: 10, docx: false },
+    { k: '_marcaRes', t: 'Resolución aprobatoria (marca)', peso: 6, jc: 'center', val: 'marcaRes' },
+    { k: '_estadoRes', t: 'Estado marca resolución', peso: 5, val: 'estadoRes', docx: false },
+    { k: 'resolucionNumero', t: 'N° resolución', peso: 6 },
+    { k: 'resolucionFecha', t: 'Fecha resolución', peso: 6, jc: 'center', val: 'fecha', docx: false },
+    { k: 'resolucionUrl', t: 'Enlace resolución aprobatoria', peso: 10, docx: false },
+    { k: 'fechaInicioEjecucion', t: 'Inicio ejecución', peso: 6, jc: 'center', val: 'fecha' },
+    { k: 'fechaTerminoEjecucion', t: 'Término ejecución', peso: 6, jc: 'center', val: 'fecha' },
+    { k: 'estadoEjecucion', t: 'Ejecución', peso: 7 },
+    { k: '_hitos', t: 'Hitos', peso: 4, jc: 'center', val: 'hitos' },
+    { k: '_estado', t: 'Estado actual', peso: 9, val: 'estado' },
+    { k: '_alertas', t: 'Alertas', peso: 13, val: 'alertas' },
+    { k: '_inconsistencias', t: 'Inconsistencias de datos', peso: 13, val: 'inconsistencias', docx: false },
+    /* Contenido escrito por personas que el tablero mostraba pero no exportaba. */
+    { k: 'observacionesFactibilidad', t: 'Observaciones de Factibilidad', peso: 12, docx: false },
+    { k: 'observacionesAC', t: 'Observaciones de A&C', peso: 12, docx: false }
+  ];
+
+  /** URL asociada a una columna, cuando la hay. El enlace acompaña al dato; nunca lo sustituye. */
+  urlDeColumna(r, col) {
+    if (col.k === '_marcaCore' || col.k === 'acuerdoCoreNumero') return this.clean(r.acuerdoCoreUrl);
+    if (col.k === '_marcaRes' || col.k === 'resolucionNumero') return this.clean(r.resolucionUrl);
+    return '';
+  }
+
+  /**
+   * Texto de una celda exportada. Acá viven las reglas del contrato:
+   *  · el vacío se imprime como «—» en Word y como celda vacía en el CSV, y
+   *    nunca se confunde con un «No»;
+   *  · una marca fuera de dominio muestra el CRUDO y se rotula como tal: un
+   *    valor que no entendemos se hace visible, jamás se descarta;
+   *  · el monto respeta props.mostrarMontos.
+   */
+  celdaExport(r, col, formato) {
+    const docx = formato === 'docx';
+    const vacio = docx ? '—' : '';
+    switch (col.val) {
+      case 'monto': {
+        if (this.props.mostrarMontos === false) return vacio;
+        return docx ? this.money(this.parseMoney(r.monto)) : String(this.parseMoney(r.monto));
+      }
+      case 'marcaCore': case 'marcaRes': {
+        const m = this.marca(r, col.val === 'marcaCore' ? 'acuerdoCore' : 'resolucionMarca');
+        /* La etiqueta, no el crudo: con el crudo vacío la celda salía como
+           « (fuera de dominio)», un rótulo sin ningún valor delante. */
+        if (m.estado === 'desconocido') return m.label + ' (fuera de dominio)';
+        return m.label || vacio;
+      }
+      case 'estadoCore': return this.marca(r, 'acuerdoCore').estado;
+      case 'estadoRes': return this.marca(r, 'resolucionMarca').estado;
+      case 'estado': return this.estado(r).label;
+      case 'hitos': return this.filled(r) + '/' + this.MILESTONES.length;
+      case 'fecha': { const f = this.fmtDate(r[col.k]); return f === '—' ? vacio : f; }
+      case 'alertas': { const a = this.alerts(r); return a.length ? a.join(docx ? '\n' : ' | ') : vacio; }
+      case 'inconsistencias': { const a = this.inconsistencias(r); return a.length ? a.join(docx ? '\n' : ' | ') : vacio; }
+      default: { const v = this.clean(r[col.k]); return v === '' ? vacio : v; }
+    }
+  }
+
+  /** Mismo orden que la tabla en pantalla: lo exportado es lo que se está viendo. */
+  ordenar(lista) {
+    const S = this.state;
+    return [...lista].sort((a, b) => {
+      let av = a[S.sortKey], bv = b[S.sortKey];
+      if (S.sortKey === 'monto') { av = this.parseMoney(av); bv = this.parseMoney(bv); return (av - bv) * S.sortDir; }
+      return String(this.clean(av)).localeCompare(String(this.clean(bv)), 'es', { numeric: true, sensitivity: 'base' }) * S.sortDir;
+    });
+  }
+
+  /** Universo a exportar según el selector de alcance. */
+  datosExport(alcance) {
+    const d = alcance === 'todos' ? this.state.raw.slice() : this.filtered();
+    return this.ordenar(d);
+  }
+
+  /**
+   * Filtros vigentes, legibles. Fuente ÚNICA de los chips, del encabezado que se
+   * imprime y del documento Word: si divergieran, el documento dejaría de ser
+   * auditable. Cuando hay filtros suspendidos por una impresión con alcance
+   * «todos», se informan ésos, que son los que el lector tenía en pantalla.
+   */
+  filtrosActivos() {
+    const S = this.state;
+    const F = S.filtrosSuspendidos || S;
+    const out = [];
+    if (this.has(F.q)) out.push({ k: 'q', etiqueta: 'Búsqueda libre', valor: '“' + this.clean(F.q) + '”' });
+    if (this.has(F.etapa)) out.push({ k: 'etapa', etiqueta: 'Etapa', valor: this.clean(F.etapa) });
+    if (this.has(F.fondo)) out.push({ k: 'fondo', etiqueta: 'Fondo', valor: this.clean(F.fondo) });
+    if (this.has(F.comuna)) out.push({ k: 'comuna', etiqueta: 'Comuna', valor: this.clean(F.comuna) });
+    if (this.has(F.evaluador)) out.push({ k: 'evaluador', etiqueta: 'Evaluador/a', valor: this.clean(F.evaluador) });
+    if (this.has(F.hito)) {
+      const m = this.MILESTONES.find(x => x.k === F.hito);
+      out.push({ k: 'hito', etiqueta: 'Hito alcanzado', valor: m ? m.t : this.clean(F.hito) });
+    }
+    if (this.has(F.plazo)) {
+      const pz = this.PLAZOS.find(x => x.value === F.plazo);
+      out.push({ k: 'plazo', etiqueta: 'Plazo de ejecución', valor: pz ? pz.label : this.clean(F.plazo) });
+    }
+    return out;
+  }
+
+  /**
+   * Estado de los filtros para el encabezado del documento — el requisito de
+   * auditabilidad del brief. Con alcance «todos» los filtros se listan igual,
+   * pero rotulados como NO aplicados: quien recibe el documento tiene que poder
+   * distinguir «no había filtros» de «había filtros y se ignoraron».
+   */
+  filtrosParaDocumento(alcance) {
+    const S = this.state;
+    const activos = this.filtrosActivos();
+    const f = activos.map(x => ({ etiqueta: x.etiqueta, valor: x.valor }));
+    if (!f.length) f.push({ etiqueta: 'Filtros', valor: 'Sin filtros' });
+    const rotulo = { nPostulacion: 'N° de postulación', nombreProyecto: 'Proyecto', institucion: 'Institución', monto: 'Monto', etapa: 'Etapa', fondo: 'Fondo', estadoFactibilidad: 'Factibilidad', dictamenAC: 'Dictamen A&C', acuerdoCore: 'Priorización' };
+    f.push({
+      etiqueta: 'Orden en pantalla',
+      valor: (rotulo[S.sortKey] || S.sortKey) + ' · ' + (S.sortDir === 1 ? 'ascendente' : 'descendente')
+    });
+    f.push({
+      etiqueta: 'Alcance del documento',
+      valor: alcance === 'todos'
+        ? 'Todos los proyectos de la planilla — LOS FILTROS DE PANTALLA NO SE APLICARON'
+        : 'Sólo los proyectos que cumplen los filtros vigentes'
+    });
+    return f;
+  }
+
+  /** Procedencia de los datos: la otra mitad de la auditabilidad. */
+  procedenciaParaDocumento() {
+    const S = this.state;
+    const f = [];
+    f.push({
+      etiqueta: 'Origen',
+      valor: S.demo
+        ? 'DATOS DE DEMOSTRACIÓN — sin conexión con la planilla en vivo'
+        : 'Web App de Apps Script sobre la planilla «Proyectos Postulados L3»'
+    });
+    f.push({
+      etiqueta: 'Última actualización',
+      valor: this.fechaHora(S.updatedAt) || 'no informada por la fuente'
+    });
+    if (S.sources) f.push({ etiqueta: 'Filas por hoja', valor: this.fuentesTexto() });
+    if (this.has(S.notice)) f.push({ etiqueta: 'Avisos de la fuente', valor: this.clean(S.notice) });
+    return f;
+  }
+
+  /* ===========================================================================
+     Motor .docx autocontenido: ZIP en método STORED + WordprocessingML.
+     Cero dependencias y cero build; sólo APIs de plataforma (TextEncoder,
+     Uint8Array, DataView, Blob). Se sigue ECMA-376 parte 1 (WordprocessingML) y
+     parte 2 (OPC), y APPNOTE 6.3.x para el ZIP. El orden de los hijos de tblPr /
+     trPr / tcPr / pPr / rPr / sectPr respeta las secuencias del esquema: son
+     xsd:sequence, y alterarlas es exactamente lo que hace que Word declare el
+     archivo corrupto.
+     NOTA DE MANTENCIÓN: en este bloque las etiquetas de cierre se escriben con
+     el escape \x3C en vez del signo «menor que». El compilado embebe este script
+     dentro de otro script y transforma esa secuencia, con lo que la prueba de
+     paridad fallaría; el escape produce el mismo carácter sin la secuencia.
+     =========================================================================== */
+  DOCX = {
+
+    /** Tabla CRC-32, polinomio reflejado 0xEDB88320 (el de PKZIP/zlib). Memoizada. */
+    crcTabla() {
+      if (this._crcTab) return this._crcTab;
+      const t = new Uint32Array(256);
+      for (let n = 0; n < 256; n++) {
+        let c = n;
+        for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+        t[n] = c >>> 0;
+      }
+      this._crcTab = t;
+      return t;
+    },
+
+    crc32(u8) {
+      const t = this.crcTabla();
+      let c = 0xFFFFFFFF;
+      for (let i = 0; i < u8.length; i++) c = t[(c ^ u8[i]) & 0xFF] ^ (c >>> 8);
+      return (c ^ 0xFFFFFFFF) >>> 0;
+    },
+
+    /** Fecha/hora en los campos MS-DOS de 16 bits del ZIP. */
+    fechaDos(d) {
+      const y = Math.max(1980, d.getFullYear());
+      return {
+        hora: ((d.getHours() & 31) << 11) | ((d.getMinutes() & 63) << 5) | (((d.getSeconds() / 2) | 0) & 31),
+        dia: (((y - 1980) & 127) << 9) | (((d.getMonth() + 1) & 15) << 5) | (d.getDate() & 31)
+      };
+    },
+
+    /**
+     * ZIP con todas las entradas en método 0 (STORED, sin comprimir). Al no
+     * comprimir, tamaño comprimido == tamaño original y no hacen falta
+     * descriptores de datos. Un .docx de 1.000 proyectos pesa ~5,5 MB, muy por
+     * encima de la cartera real; si algún día molesta, el mismo XML con DEFLATE
+     * queda 8,8× más chico usando CompressionStream('deflate-raw') y método 8,
+     * al costo de volver la exportación asíncrona.
+     */
+    zipSync(entradas, fecha) {
+      const enc = new TextEncoder();
+      const items = entradas.map(e => {
+        const data = typeof e.data === 'string' ? enc.encode(e.data) : e.data;
+        return { nombre: enc.encode(e.name), data, crc: this.crc32(data), offset: 0 };
+      });
+      const dosf = this.fechaDos(fecha || new Date());
+      const hora = dosf.hora, dia = dosf.dia;
+
+      let total = 22;
+      items.forEach(it => { total += 30 + it.nombre.length + it.data.length + 46 + it.nombre.length; });
+
+      const out = new Uint8Array(total);
+      const dv = new DataView(out.buffer);
+      let off = 0;
+      const u16 = v => { dv.setUint16(off, v & 0xFFFF, true); off += 2; };
+      const u32 = v => { dv.setUint32(off, v >>> 0, true); off += 4; };
+      const raw = b => { out.set(b, off); off += b.length; };
+
+      items.forEach(it => {
+        it.offset = off;
+        u32(0x04034b50);       // firma de cabecera local
+        u16(20);               // versión necesaria 2.0
+        u16(0x0800);           // bit 11: nombres en UTF-8
+        u16(0);                // método 0 = STORED
+        u16(hora); u16(dia);
+        u32(it.crc);
+        u32(it.data.length);   // tamaño comprimido
+        u32(it.data.length);   // tamaño original
+        u16(it.nombre.length);
+        u16(0);
+        raw(it.nombre);
+        raw(it.data);
+      });
+
+      const cdIni = off;
+      items.forEach(it => {
+        u32(0x02014b50);
+        u16(20); u16(20); u16(0x0800); u16(0);
+        u16(hora); u16(dia);
+        u32(it.crc);
+        u32(it.data.length); u32(it.data.length);
+        u16(it.nombre.length);
+        u16(0); u16(0); u16(0); u16(0);
+        u32(0);
+        u32(it.offset);
+        raw(it.nombre);
+      });
+
+      const cdTam = off - cdIni;
+      u32(0x06054b50);
+      u16(0); u16(0);
+      u16(items.length); u16(items.length);
+      u32(cdTam); u32(cdIni);
+      u16(0);
+      return out;
+    },
+
+    /**
+     * Escapa para XML y ELIMINA los caracteres de control que XML 1.0 prohíbe.
+     * Una sola celda con un 0x0B —Sheets los produce al pegar saltos suaves—
+     * basta para que Word declare el paquete corrupto.
+     */
+    xmlEsc(v) {
+      return String(v == null ? '' : v)
+        .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g, '')
+        .replace(/&/g, '&amp;')
+        .replace(/\x3C/g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+    },
+
+    color(c) {
+      const h = String(c || '').replace('#', '').trim();
+      return /^[0-9a-fA-F]{6}$/.test(h) ? h.toUpperCase() : 'auto';
+    },
+
+    /** Orden EG_RPrBase: rFonts, b, i, color, sz, szCs, u. */
+    rPr(o) {
+      o = o || {};
+      let x = '';
+      if (o.fuente) {
+        const f = this.xmlEsc(o.fuente);
+        x += '<w:rFonts w:ascii="' + f + '" w:hAnsi="' + f + '" w:cs="' + f + '"/>';
+      }
+      if (o.negrita) x += '<w:b/>';
+      if (o.cursiva) x += '<w:i/>';
+      if (o.color) x += '<w:color w:val="' + this.color(o.color) + '"/>';
+      if (o.pt) { const s = Math.round(o.pt * 2); x += '<w:sz w:val="' + s + '"/><w:szCs w:val="' + s + '"/>'; }
+      if (o.subrayado) x += '<w:u w:val="single"/>';
+      return x ? '<w:rPr>' + x + '\x3C/w:rPr>' : '';
+    },
+
+    /** Cada salto de línea pasa a ser un <w:br/>: Word ignora el salto dentro de <w:t>. */
+    runs(texto, fmt) {
+      const rpr = this.rPr(fmt);
+      const partes = String(texto == null ? '' : texto).split(/\r\n|\r|\n/);
+      return partes.map((linea, i) =>
+        '<w:r>' + rpr + (i ? '<w:br/>' : '') +
+        '<w:t xml:space="preserve">' + this.xmlEsc(linea) + '\x3C/w:t>\x3C/w:r>'
+      ).join('');
+    },
+
+    /** Orden CT_PPrBase (subconjunto): shd, spacing, jc. */
+    p(texto, o) {
+      o = o || {};
+      let pPr = '';
+      if (o.fondoParrafo) pPr += '<w:shd w:val="clear" w:color="auto" w:fill="' + this.color(o.fondoParrafo) + '"/>';
+      if (o.antes || o.despues) {
+        pPr += '<w:spacing w:before="' + (o.antes || 0) + '" w:after="' + (o.despues || 0) +
+          '" w:line="240" w:lineRule="auto"/>';
+      }
+      if (o.jc) pPr += '<w:jc w:val="' + o.jc + '"/>';
+      const cuerpo = o.runsXml != null ? o.runsXml : this.runs(texto, o);
+      return '<w:p>' + (pPr ? '<w:pPr>' + pPr + '\x3C/w:pPr>' : '') + cuerpo + '\x3C/w:p>';
+    },
+
+    /**
+     * Hipervínculo externo. Mantener el ENLACE separado del TEXTO es justamente
+     * el punto de D3: la celda afirma lo que dice la MARCA declarada y, sólo si
+     * además hay URL, la enlaza. Tener o no tener URL nunca altera lo que el
+     * documento afirma ni lo que se cuenta.
+     */
+    hipervinculo(rels, url, texto, fmt) {
+      const u = String(url || '').trim();
+      if (!u) return this.runs(texto, fmt);
+      const id = 'rIdH' + (rels.length + 1);
+      rels.push({ id, tipo: 'hyperlink', destino: u, externo: true });
+      const f = Object.assign({ color: '#0E7C86', subrayado: true }, fmt || {});
+      return '<w:hyperlink r:id="' + id + '">' + this.runs(texto, f) + '\x3C/w:hyperlink>';
+    },
+
+    /**
+     * Reparte el ancho (twips) entre columnas según pesos, garantizando que la
+     * suma sea EXACTA: si los gridCol no suman tblW, Word recalcula a su gusto y
+     * la tabla se sale de la página.
+     */
+    anchos(pesos, ancho) {
+      const suma = pesos.reduce((a, b) => a + b, 0) || 1;
+      const w = pesos.map(p => Math.max(120, Math.round(ancho * p / suma)));
+      const dif = ancho - w.reduce((a, b) => a + b, 0);
+      let iMax = 0;
+      w.forEach((v, i) => { if (v > w[iMax]) iMax = i; });
+      w[iMax] += dif;
+      return w;
+    },
+
+    /** Orden CT_TcPrBase (subconjunto): tcW, shd, vAlign. */
+    celda(o) {
+      let tcPr = '<w:tcW w:w="' + o.w + '" w:type="dxa"/>';
+      if (o.fondo) tcPr += '<w:shd w:val="clear" w:color="auto" w:fill="' + this.color(o.fondo) + '"/>';
+      tcPr += '<w:vAlign w:val="' + (o.vAlign || 'top') + '"/>';
+      const parrafos = o.parrafosXml != null ? o.parrafosXml : this.p(o.texto, {
+        pt: o.pt, negrita: o.negrita, cursiva: o.cursiva,
+        color: o.color, fuente: o.fuente, jc: o.jc, runsXml: o.runsXml
+      });
+      // Toda w:tc debe contener al menos un w:p.
+      return '<w:tc><w:tcPr>' + tcPr + '\x3C/w:tcPr>' + (parrafos || this.p('')) + '\x3C/w:tc>';
+    },
+
+    /** Orden CT_TblPrBase: tblW, tblBorders, tblLayout, tblCellMar, tblLook. */
+    tabla(o) {
+      const w = this.anchos(o.pesos, o.anchoTotal);
+      const borde = this.color(o.borde || '#C9D4E0');
+      const linea = lado => '<w:' + lado + ' w:val="single" w:sz="4" w:space="0" w:color="' + borde + '"/>';
+
+      let x = '<w:tbl><w:tblPr>';
+      x += '<w:tblW w:w="' + o.anchoTotal + '" w:type="dxa"/>';
+      x += '<w:tblBorders>' + linea('top') + linea('left') + linea('bottom') + linea('right') +
+        linea('insideH') + linea('insideV') + '\x3C/w:tblBorders>';
+      x += '<w:tblLayout w:type="fixed"/>';
+      x += '<w:tblCellMar><w:top w:w="24" w:type="dxa"/><w:left w:w="60" w:type="dxa"/>' +
+        '<w:bottom w:w="24" w:type="dxa"/><w:right w:w="60" w:type="dxa"/>\x3C/w:tblCellMar>';
+      x += '<w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" ' +
+        'w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>';
+      x += '\x3C/w:tblPr>';
+      x += '<w:tblGrid>' + w.map(v => '<w:gridCol w:w="' + v + '"/>').join('') + '\x3C/w:tblGrid>';
+
+      if (o.encabezado) {
+        // Orden CT_TrPrBase: cantSplit, tblHeader. tblHeader repite el encabezado
+        // en cada página, que es lo que hace legible una tabla de varias hojas.
+        x += '<w:tr><w:trPr><w:cantSplit/><w:tblHeader/>\x3C/w:trPr>';
+        x += o.encabezado.map((t, i) => this.celda({
+          w: w[i], texto: t, pt: o.ptEncabezado || 6.5, negrita: true,
+          color: o.colorEncabezado || '#FFFFFF', fondo: o.fondoEncabezado || '#0B2545',
+          jc: (o.alineaciones && o.alineaciones[i]) || 'left'
+        })).join('');
+        x += '\x3C/w:tr>';
+      }
+
+      (o.filas || []).forEach((fila, iF) => {
+        x += '<w:tr><w:trPr><w:cantSplit/>\x3C/w:trPr>';
+        x += fila.map((celda, iC) => {
+          const base = (celda && typeof celda === 'object') ? celda : { texto: celda };
+          const fmt = o.fmtCelda ? (o.fmtCelda(fila, iF, iC) || {}) : {};
+          return this.celda(Object.assign({
+            w: w[iC], pt: o.pt || 6.5,
+            jc: (o.alineaciones && o.alineaciones[iC]) || 'left'
+          }, fmt, base));
+        }).join('');
+        x += '\x3C/w:tr>';
+      });
+
+      // Párrafo vacío tras la tabla: impide que dos tablas contiguas se fusionen
+      // y que la última quede pegada al sectPr.
+      return x + '\x3C/w:tbl>' + this.p('', { despues: 120 });
+    },
+
+    CABECERA_XML: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n',
+    NS_W: 'http://schemas.openxmlformats.org/wordprocessingml/2006/main',
+    NS_R: 'http://schemas.openxmlformats.org/officeDocument/2006/relationships',
+    MIME: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+
+    contentTypes() {
+      const ov = (parte, ct) => '<Override PartName="' + parte + '" ContentType="' + ct + '"/>';
+      const wml = 'application/vnd.openxmlformats-officedocument.wordprocessingml.';
+      return this.CABECERA_XML +
+        '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+        '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+        '<Default Extension="xml" ContentType="application/xml"/>' +
+        ov('/word/document.xml', wml + 'document.main+xml') +
+        ov('/word/styles.xml', wml + 'styles+xml') +
+        ov('/word/header1.xml', wml + 'header+xml') +
+        ov('/word/footer1.xml', wml + 'footer+xml') +
+        ov('/docProps/core.xml', 'application/vnd.openxmlformats-package.core-properties+xml') +
+        ov('/docProps/app.xml', 'application/vnd.openxmlformats-officedocument.extended-properties+xml') +
+        '\x3C/Types>';
+    },
+
+    relsRaiz() {
+      return this.CABECERA_XML +
+        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+        '<Relationship Id="rId1" Type="' + this.NS_R + '/officeDocument" Target="word/document.xml"/>' +
+        '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>' +
+        '<Relationship Id="rId3" Type="' + this.NS_R + '/extended-properties" Target="docProps/app.xml"/>' +
+        '\x3C/Relationships>';
+    },
+
+    relsDocumento(rels) {
+      let x = this.CABECERA_XML +
+        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+        '<Relationship Id="rIdStyles" Type="' + this.NS_R + '/styles" Target="styles.xml"/>' +
+        '<Relationship Id="rIdHeader" Type="' + this.NS_R + '/header" Target="header1.xml"/>' +
+        '<Relationship Id="rIdFooter" Type="' + this.NS_R + '/footer" Target="footer1.xml"/>';
+      (rels || []).forEach(r => {
+        x += '<Relationship Id="' + r.id + '" Type="' + this.NS_R + '/' + r.tipo +
+          '" Target="' + this.xmlEsc(r.destino) + '"' + (r.externo ? ' TargetMode="External"' : '') + '/>';
+      });
+      return x + '\x3C/Relationships>';
+    },
+
+    estilos(o) {
+      o = o || {};
+      const fuente = this.xmlEsc(o.fuente || 'Calibri');
+      const sz = Math.round((o.pt || 9) * 2);
+      return this.CABECERA_XML +
+        '<w:styles xmlns:w="' + this.NS_W + '">' +
+        '<w:docDefaults><w:rPrDefault><w:rPr>' +
+        '<w:rFonts w:ascii="' + fuente + '" w:hAnsi="' + fuente + '" w:cs="' + fuente + '"/>' +
+        '<w:sz w:val="' + sz + '"/><w:szCs w:val="' + sz + '"/>' +
+        '<w:lang w:val="es-CL" w:eastAsia="es-CL" w:bidi="ar-SA"/>' +
+        '\x3C/w:rPr>\x3C/w:rPrDefault>' +
+        '<w:pPrDefault><w:pPr><w:spacing w:after="0" w:line="240" w:lineRule="auto"/>\x3C/w:pPr>\x3C/w:pPrDefault>' +
+        '\x3C/w:docDefaults>' +
+        '<w:style w:type="paragraph" w:default="1" w:styleId="Normal">' +
+        '<w:name w:val="Normal"/><w:qFormat/>\x3C/w:style>' +
+        '\x3C/w:styles>';
+    },
+
+    /**
+     * Encabezado de PÁGINA (word/header1.xml), no de documento.
+     *
+     * La tabla «Parámetros de la consulta» vive en la página 1: en un documento
+     * de varias hojas, cualquier página suelta a partir de la 2 dejaba de decir
+     * si la cartera está filtrada o completa — y una cartera impresa se reparte
+     * por hojas. El alcance y los filtros se repiten en todas.
+     */
+    encabezadoDePagina(leyenda) {
+      return this.CABECERA_XML +
+        '<w:hdr xmlns:w="' + this.NS_W + '" xmlns:r="' + this.NS_R + '">' +
+        this.p(leyenda, { pt: 7, color: '#6B7A8D', despues: 60 }) +
+        '\x3C/w:hdr>';
+    },
+
+    pieDePagina(leyenda) {
+      const fmt = { pt: 7, color: '#6B7A8D' };
+      const campo = instr =>
+        '<w:r><w:fldChar w:fldCharType="begin"/>\x3C/w:r>' +
+        '<w:r><w:instrText xml:space="preserve"> ' + instr + ' \x3C/w:instrText>\x3C/w:r>' +
+        '<w:r><w:fldChar w:fldCharType="separate"/>\x3C/w:r>' +
+        this.runs('1', fmt) +
+        '<w:r><w:fldChar w:fldCharType="end"/>\x3C/w:r>';
+      const runsXml =
+        this.runs(leyenda + '    ·    Página ', fmt) + campo('PAGE') +
+        this.runs(' de ', fmt) + campo('NUMPAGES');
+      return this.CABECERA_XML +
+        '<w:ftr xmlns:w="' + this.NS_W + '" xmlns:r="' + this.NS_R + '">' +
+        this.p(null, { runsXml, jc: 'center', antes: 60 }) +
+        '\x3C/w:ftr>';
+    },
+
+    iso(d) { return new Date(d).toISOString().replace(/\.\d{3}Z$/, 'Z'); },
+
+    propsCore(o) {
+      return this.CABECERA_XML +
+        '<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties"' +
+        ' xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"' +
+        ' xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">' +
+        '<dc:title>' + this.xmlEsc(o.titulo) + '\x3C/dc:title>' +
+        '<dc:subject>' + this.xmlEsc(o.subtitulo || '') + '\x3C/dc:subject>' +
+        '<dc:creator>' + this.xmlEsc(o.autor || 'Tablero FNDR L3') + '\x3C/dc:creator>' +
+        '<cp:lastModifiedBy>' + this.xmlEsc(o.autor || 'Tablero FNDR L3') + '\x3C/cp:lastModifiedBy>' +
+        '<dcterms:created xsi:type="dcterms:W3CDTF">' + this.iso(o.fecha) + '\x3C/dcterms:created>' +
+        '<dcterms:modified xsi:type="dcterms:W3CDTF">' + this.iso(o.fecha) + '\x3C/dcterms:modified>' +
+        '\x3C/cp:coreProperties>';
+    },
+
+    propsApp() {
+      return this.CABECERA_XML +
+        '<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"' +
+        ' xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">' +
+        '<Application>Tablero FNDR L3 · DIDESOH\x3C/Application>' +
+        '<Company>Gobierno Regional de Valparaíso\x3C/Company>' +
+        '\x3C/Properties>';
+    },
+
+    /** A4 en twips (1 pulgada = 1440 twips). */
+    PAGINA: { anchoA4: 11906, altoA4: 16838 },
+
+    /** Geometría de la página. Con este número de columnas sólo cabe horizontal. */
+    geometria(orientacion, margen) {
+      const m = margen == null ? 680 : margen;
+      const horizontal = orientacion !== 'vertical';
+      const w = horizontal ? this.PAGINA.altoA4 : this.PAGINA.anchoA4;
+      const h = horizontal ? this.PAGINA.anchoA4 : this.PAGINA.altoA4;
+      return { w, h, margen: m, util: w - 2 * m, horizontal };
+    },
+
+    /**
+     * Orden CT_SectPr: las referencias a encabezado y pie van PRIMERO (y dentro
+     * de EG_HdrFtrReferences el headerReference antecede al footerReference);
+     * luego pgSz, pgMar, cols, docGrid.
+     */
+    sectPr(g) {
+      return '<w:sectPr>' +
+        '<w:headerReference w:type="default" r:id="rIdHeader"/>' +
+        '<w:footerReference w:type="default" r:id="rIdFooter"/>' +
+        '<w:pgSz w:w="' + g.w + '" w:h="' + g.h + '"' + (g.horizontal ? ' w:orient="landscape"' : '') + '/>' +
+        '<w:pgMar w:top="' + g.margen + '" w:right="' + g.margen + '" w:bottom="' + g.margen +
+        '" w:left="' + g.margen + '" w:header="340" w:footer="340" w:gutter="0"/>' +
+        '<w:cols w:space="708"/>' +
+        '<w:docGrid w:linePitch="360"/>' +
+        '\x3C/w:sectPr>';
+    },
+
+    documento(cuerpoXml, g) {
+      return this.CABECERA_XML +
+        '<w:document xmlns:w="' + this.NS_W + '" xmlns:r="' + this.NS_R + '">' +
+        '<w:body>' + cuerpoXml + this.sectPr(g) + '\x3C/w:body>\x3C/w:document>';
+    },
+
+    /** [Content_Types].xml va primero por convención OPC. */
+    empaquetar(o) {
+      const fecha = o.fecha || new Date();
+      return this.zipSync([
+        { name: '[Content_Types].xml', data: this.contentTypes() },
+        { name: '_rels/.rels', data: this.relsRaiz() },
+        { name: 'docProps/core.xml', data: this.propsCore({ titulo: o.titulo, subtitulo: o.subtitulo, autor: o.autor, fecha }) },
+        { name: 'docProps/app.xml', data: this.propsApp() },
+        { name: 'word/document.xml', data: o.documentXml },
+        { name: 'word/_rels/document.xml.rels', data: this.relsDocumento(o.rels) },
+        { name: 'word/styles.xml', data: this.estilos({ fuente: o.fuente, pt: o.pt }) },
+        { name: 'word/header1.xml', data: this.encabezadoDePagina(o.leyendaEncabezado || '') },
+        { name: 'word/footer1.xml', data: this.pieDePagina(o.leyendaPie || '') }
+      ], fecha);
+    },
+
+    /** Descarga en el navegador. Aislada para poder probar empaquetar() en Node. */
+    descargar(bytes, nombre) {
+      const blob = new Blob([bytes], { type: this.MIME });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = nombre;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+      return blob;
+    }
+  };
+
+  /** Nombre de archivo con alcance y fecha: dos exportaciones distintas no pueden ser homónimas. */
+  nombreArchivo(alcance, ext, fecha) {
+    const d = fecha || new Date();
+    const pad = n => (n < 10 ? '0' : '') + n;
+    const ymd = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    return 'fndr-l3-cartera-' + (alcance === 'todos' ? 'todos' : 'filtrados') + '-' + ymd + '.' + ext;
+  }
+
   exportCsv = () => {
-    const d = this.filtered();
-    const cols = [['nPostulacion', 'N°'], ['nombreProyecto', 'Proyecto'], ['institucion', 'Institución'], ['comuna', 'Comuna'], ['fondo', 'Fondo'], ['categoria', 'Categoría'], ['monto', 'Monto'], ['etapa', 'Etapa'], ['estadoFactibilidad', 'Factibilidad'], ['evaluadorFactibilidad', 'Evaluador factibilidad'], ['dictamenAC', 'Dictamen A&C'], ['estadoAC', 'Estado A&C'], ['evaluadorAC', 'Evaluador A&C'], ['acuerdoCore', 'Acuerdo CORE'], ['acuerdoCoreNumero', 'N° acuerdo'], ['resolucionNumero', 'N° resolución'], ['fechaInicioEjecucion', 'Inicio'], ['fechaTerminoEjecucion', 'Término'], ['estadoEjecucion', 'Ejecución']];
-    const esc = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
-    const lines = [cols.map(c => esc(c[1])).join(';')];
-    d.forEach(r => lines.push(cols.map(c => esc(c[0] === 'monto' ? this.parseMoney(r.monto) : this.clean(r[c[0]]))).join(';')));
-    lines.push(esc('Estado actual') + ';' + esc('Alertas'));
+    const alc = this.state.alcanceExport === 'todos' ? 'todos' : 'filtrados';
+    const d = this.datosExport(alc);
+    const cols = this.COLS_EXPORT;
+    /* Los saltos de línea se aplanan: una fila del archivo = un proyecto. Entre
+       comillas serían CSV válido, pero rompen cualquier lectura por líneas. */
+    const esc = v => '"' + String(v == null ? '' : v).replace(/\r?\n/g, ' | ').replace(/"/g, '""') + '"';
+    const lines = [cols.map(c => esc(c.t)).join(';')];
+    d.forEach(r => lines.push(cols.map(c => esc(this.celdaExport(r, c, 'csv'))).join(';')));
+    /* D7: después de los datos ya NO se escribe nada. «Estado actual» y «Alertas»
+       —las dos que antes se empujaban como una fila espuria al final— son ahora
+       columnas de verdad, junto con las marcas, sus estados y los enlaces. */
     const blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'fndr-l3-cartera.csv';
+    a.download = this.nombreArchivo(alc, 'csv');
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  };
+
+  /**
+   * Exporta la cartera a Word (.docx real, no HTML renombrado).
+   * @param {'filtrados'|'todos'} [alcance='filtrados']
+   * @param {{orientacion?:'horizontal'|'vertical', descargar?:boolean, fecha?:Date}} [opciones]
+   * @returns {{nombre:string, bytes:Uint8Array, n:number}}
+   */
+  exportDocx(alcance, opciones) {
+    const o = opciones || {};
+    const D = this.DOCX;
+    const alc = alcance === 'todos' ? 'todos' : 'filtrados';
+    const datos = this.datosExport(alc);
+    const cols = this.COLS_EXPORT.filter(c => c.docx !== false);
+    const g = D.geometria(o.orientacion || 'horizontal');
+    const rels = [];
+    const ahora = o.fecha || new Date();
+
+    const TITULO = 'Cartera FNDR Línea 3 · Estado de tramitación';
+    const AZUL = '#0B2545', TEAL = '#0E7C86', GRIS = '#6B7A8D', ROJO = '#9B1C1C';
+    const montos = this.props.mostrarMontos !== false;
+
+    let cuerpo = '';
+
+    cuerpo += D.p(TITULO, { fuente: 'Georgia', pt: 17, negrita: true, color: AZUL, despues: 60 });
+    cuerpo += D.p('Gobierno Regional de Valparaíso · DIDESOH · División de Desarrollo Social y Humano',
+      { pt: 9, color: GRIS, despues: 40 });
+    cuerpo += D.p(
+      'Documento generado el ' +
+      ahora.toLocaleDateString('es-CL', { day: '2-digit', month: 'long', year: 'numeric' }) +
+      ' a las ' + ahora.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }),
+      { pt: 9, color: GRIS, despues: 240 });
+
+    const paramTabla = filas => D.tabla({
+      anchoTotal: g.util, pesos: [22, 78], pt: 8.5,
+      encabezado: ['Parámetro', 'Valor'], ptEncabezado: 8.5, fondoEncabezado: AZUL,
+      filas: filas.map(x => [x.etiqueta, x.valor]),
+      fmtCelda: (fila, iF, iC) => iC === 0 ? { negrita: true, color: AZUL } : {}
+    });
+
+    /* Requisito de auditabilidad del brief: el documento declara con qué filtros
+       se generó, o dice «Sin filtros». Sin esto, dos documentos con carteras
+       distintas son indistinguibles. */
+    cuerpo += D.p('Parámetros de la consulta', { pt: 11, negrita: true, color: TEAL, antes: 120, despues: 80 });
+    cuerpo += paramTabla(this.filtrosParaDocumento(alc));
+
+    cuerpo += D.p('Procedencia de los datos', { pt: 11, negrita: true, color: TEAL, antes: 160, despues: 80 });
+    cuerpo += paramTabla(this.procedenciaParaDocumento());
+
+    const montoTotal = datos.reduce((a, r) => a + this.parseMoney(r.monto), 0);
+    const acf = datos.filter(r => this.acFav(r));
+    const core = datos.filter(r => this.coreOk(r));
+    const res = datos.filter(r => this.resOk(r));
+    const sum = lista => montos ? this.money(lista.reduce((a, r) => a + this.parseMoney(r.monto), 0)) : '—';
+    const conTram = (n, verbo) => n ? ' · ' + n + ' ' + verbo : '';
+
+    cuerpo += D.p('Resumen', { pt: 11, negrita: true, color: TEAL, antes: 160, despues: 80 });
+    cuerpo += paramTabla([
+      { etiqueta: 'Proyectos en este documento', valor: String(datos.length) },
+      { etiqueta: 'Proyectos en la planilla', valor: String(this.state.raw.length) },
+      { etiqueta: 'Monto de la selección', valor: montos ? this.money(montoTotal) : '—' },
+      { etiqueta: 'Factibilidad favorable', valor: datos.filter(r => this.factFav(r)).length + ' proyectos' },
+      { etiqueta: 'A&C favorable', valor: acf.length + ' proyectos · ' + sum(acf) },
+      {
+        etiqueta: 'Priorizados por el CORE',
+        valor: core.length + ' proyectos · ' + sum(core) +
+          conTram(datos.filter(r => this.coreTramite(r)).length, 'en tramitación')
+      },
+      {
+        etiqueta: 'Con resolución aprobatoria',
+        valor: res.length + ' proyectos · ' + sum(res) +
+          conTram(datos.filter(r => this.resTramite(r)).length, 'en tramitación')
+      },
+      { etiqueta: 'Con alertas activas', valor: String(datos.filter(r => this.alerts(r).length).length) },
+      { etiqueta: 'Con inconsistencias de datos', valor: String(datos.filter(r => this.inconsistencias(r).length).length) }
+    ]);
+
+    /* Los datos rotos van en su propia sección y con nombre y apellido: un valor
+       fuera de dominio no puede resolverse haciendo desaparecer el proyecto. */
+    const malos = datos.filter(r => this.inconsistencias(r).length);
+    if (malos.length) {
+      cuerpo += D.p('Inconsistencias de datos detectadas',
+        { pt: 11, negrita: true, color: ROJO, antes: 160, despues: 80 });
+      cuerpo += D.tabla({
+        anchoTotal: g.util, pesos: [8, 32, 60], pt: 8, borde: '#F0C9C9',
+        encabezado: ['N°', 'Proyecto', 'Detalle'], ptEncabezado: 8, fondoEncabezado: ROJO,
+        filas: malos.map(r => [
+          this.clean(r.nPostulacion), this.clean(r.nombreProyecto), this.inconsistencias(r).join('\n')
+        ])
+      });
+    }
+
+    cuerpo += D.p('Detalle de proyectos', { pt: 11, negrita: true, color: TEAL, antes: 200, despues: 80 });
+    if (!datos.length) {
+      cuerpo += D.p('La selección no contiene proyectos.', { pt: 9, cursiva: true, color: GRIS });
+    } else {
+      const filas = datos.map(r => cols.map(col => {
+        const texto = this.celdaExport(r, col, 'docx');
+        const url = this.urlDeColumna(r, col);
+        if (!this.has(url) || texto === '—') return texto;
+        return { texto, runsXml: D.hipervinculo(rels, url, texto, { pt: 6.5, fuente: col.fuente }) };
+      }));
+      const tinte = datos.map(r => this.stopped(r) ? '#FCEFEF' : (this.tieneObservaciones(r) ? '#FFFAEC' : null));
+      cuerpo += D.tabla({
+        anchoTotal: g.util,
+        pesos: cols.map(c => c.peso),
+        alineaciones: cols.map(c => c.jc || 'left'),
+        encabezado: cols.map(c => c.t),
+        pt: 6.5, ptEncabezado: 6.5, fondoEncabezado: AZUL,
+        filas,
+        fmtCelda: (fila, iF, iC) => {
+          const fondo = tinte[iF] || (iF % 2 ? '#F7F9FC' : null);
+          const f = fondo ? { fondo } : {};
+          if (cols[iC].fuente) f.fuente = cols[iC].fuente;
+          if (iC === 1) f.negrita = true;
+          return f;
+        }
+      });
+    }
+
+    cuerpo += D.p(
+      'Fuente: planilla «Proyectos Postulados L3» — hojas Factibilidad, Admisibilidad y Consistencia, ' +
+      'y Priorización. Cruce por N° de postulación. Los conteos de acuerdo CORE y de resolución ' +
+      'aprobatoria se rigen por la marca declarada; el enlace, cuando existe, sólo documenta.',
+      { pt: 7.5, color: GRIS, antes: 80 });
+
+    /* El encabezado de página repite lo que la tabla de parámetros dice sólo en
+       la página 1. Es la misma lista de filtros —filtrosActivos()— que los chips
+       y que el encabezado impreso, para que las tres lecturas no discrepen. */
+    const activos = this.filtrosActivos();
+    const leyendaEncabezado = 'Cartera FNDR Línea 3 · Alcance: ' +
+      (alc === 'todos' ? 'todos los proyectos de la planilla' : 'sólo los proyectos filtrados') +
+      ' (' + datos.length + ' de ' + this.state.raw.length + ')' +
+      ' · Filtros: ' + (activos.length ? activos.map(f => f.etiqueta + ': ' + f.valor).join(' · ') : 'Sin filtros') +
+      (alc === 'todos' && activos.length ? ' — NO APLICADOS A ESTE DOCUMENTO' : '');
+
+    const bytes = D.empaquetar({
+      documentXml: D.documento(cuerpo, g),
+      rels, fecha: ahora,
+      titulo: TITULO,
+      subtitulo: 'Alcance: ' + (alc === 'todos' ? 'todos los proyectos' : 'proyectos filtrados'),
+      autor: 'DIDESOH · Gobierno Regional de Valparaíso',
+      leyendaEncabezado,
+      leyendaPie: 'Cartera FNDR L3 · generado el ' + ahora.toLocaleDateString('es-CL'),
+      fuente: 'Calibri', pt: 9
+    });
+
+    const nombre = this.nombreArchivo(alc, 'docx', ahora);
+    if (o.descargar !== false) D.descargar(bytes, nombre);
+    return { nombre, bytes, n: datos.length };
+  }
+
+  /**
+   * Impresión / PDF con el MISMO selector de alcance que el CSV y el Word.
+   *
+   * El PDF lo produce el diálogo de impresión del navegador («Guardar como
+   * PDF»): un motor de PDF propio exigiría una biblioteca externa y acá no hay
+   * CDNs ni build. Lo que sí es responsabilidad del tablero es que ese PDF diga
+   * la verdad, y de eso se ocupan tres cosas: el encabezado declara el contenido
+   * efectivamente rendido, con alcance «todos» los filtros se apartan mientras
+   * dura el diálogo y quedan DECLARADOS como suspendidos, y beforeprint cubre
+   * las rutas de impresión que no pasan por este botón.
+   */
+  imprimir = () => {
+    const S = this.state;
+    if (S.alcanceExport !== 'todos' || !this.filtrosActivos().length) { window.print(); return; }
+    const previo = this.filtrosVigentes();
+    this.setState(Object.assign(this.sinFiltros(), { filtrosSuspendidos: previo }));
+    // El repintado tiene que alcanzar a ocurrir antes de que print() bloquee.
+    setTimeout(() => {
+      try { window.print(); } finally { this.setState(Object.assign({ filtrosSuspendidos: null }, previo)); }
+    }, 120);
   };
 
   renderVals() {
@@ -724,13 +2021,32 @@ class Component extends DCLogic {
 
     const counts = {};
     this.MILESTONES.forEach(m => { counts[m.k] = d.filter(m.test).length; });
-    const alertRows = d.filter(r => this.alerts(r).length);
-    const montoTotal = d.reduce((a, r) => a + this.parseMoney(r.monto), 0);
-    const montoCore = d.filter(r => this.coreOk(r)).reduce((a, r) => a + this.parseMoney(r.monto), 0);
+    /* La pestaña de Alertas muestra también los datos rotos: una inconsistencia
+       que nadie mira es una inconsistencia que no existe (T7). */
+    const alertRows = d.filter(r => this.tieneObservaciones(r));
+    const montoDe = lista => lista.reduce((a, r) => a + this.parseMoney(r.monto), 0);
+    const montoTotal = montoDe(d);
+    /* Conteos y montos por MARCA, no por presencia de respaldos (T1/T2/T3). */
+    const acfRows = d.filter(r => this.acFav(r));
+    const coreRows = d.filter(r => this.coreOk(r));
+    const resRows = d.filter(r => this.resOk(r));
+    const coreTram = d.filter(r => this.coreTramite(r)).length;
+    const resTram = d.filter(r => this.resTramite(r)).length;
+    const montoCore = montoDe(coreRows);
+    const montoAcf = montoDe(acfRows);
+    const montoRes = montoDe(resRows);
+    const inconsistentes = d.filter(r => this.inconsistencias(r).length);
+    const enCurso = d.filter(r => this.ejeEstado(r) === 'ejecucion').length;
+    const terminados = d.filter(r => this.ejeEstado(r) === 'terminado').length;
+    const dinero = v => showMontos ? this.short(v) : '—';
+    const enTramite = n => n ? n + ' en tramitación' : '';
 
+    /* Una vista desconocida en la URL (un typo como ?view=proyecto) dejaba el
+       tablero completamente en blanco: se cae a Panorama en vez de no renderizar. */
+    const view = this.VIEWS.includes(S.view) ? S.view : 'panorama';
     const tabDefs = [['panorama', 'Panorama', total], ['proyectos', 'Proyectos', total], ['alertas', 'Alertas', alertRows.length]];
     const tabs = tabDefs.map(([k, label, count]) => {
-      const on = S.view === k;
+      const on = view === k;
       return {
         label, count, onClick: () => this.set({ view: k }),
         bg: on ? '#F4F6FA' : 'transparent', color: on ? '#0B2545' : '#C3D6E5',
@@ -751,31 +2067,86 @@ class Component extends DCLogic {
       { label: 'Plazo de ejecución', value: S.plazo, options: this.PLAZOS.map(p => ({ value: p.value, label: p.label })), onChange: e => this.set({ plazo: e.target.value }) }
     ];
 
-    const chips = [];
-    if (S.q) chips.push({ label: '“' + S.q + '”', onClear: () => this.set({ q: '' }) });
-    ['etapa', 'fondo', 'comuna', 'evaluador'].forEach(k => { if (S[k]) chips.push({ label: S[k], onClear: () => this.set({ [k]: '' }) }); });
-    if (S.hito) { const m = this.MILESTONES.find(x => x.k === S.hito); if (m) chips.push({ label: 'Hito: ' + m.t, onClear: () => this.set({ hito: '' }) }); }
-    if (S.plazo) { const pz = this.PLAZOS.find(x => x.value === S.plazo); if (pz) chips.push({ label: 'Plazo: ' + pz.label, onClear: () => this.set({ plazo: '' }) }); }
+    /* Los chips salen de la MISMA lista que el encabezado impreso y el documento
+       Word, para que las tres lecturas del filtro no puedan discrepar. */
+    const activos = this.filtrosActivos();
+    const chips = activos.map(f => ({
+      label: f.k === 'q' ? f.valor : f.etiqueta + ': ' + f.valor,
+      onClear: () => this.set({ [f.k]: '' })
+    }));
 
+    /* Tarjetas (brief T1/T2/T3): donde hay un conteo hay también un monto, y la
+       cifra secundaria informa lo que está EN TRAMITACIÓN, que es exactamente lo
+       que el tri-estado vino a rescatar de la ambigüedad (T7). */
     const kpis = [
-      { label: 'Proyectos visibles', value: String(total), detail: raw.length + ' en la planilla', color: '#0B2545', pct: 100 },
-      { label: 'Factibilidad favorable', value: String(counts.ff), detail: Math.round(counts.ff / max * 100) + '% de la cartera', color: '#2E7D32', pct: counts.ff / max * 100 },
-      { label: 'A&C favorable', value: String(counts.acf), detail: counts.ac + ' en revisión técnica', color: '#2E7D32', pct: counts.acf / max * 100 },
-      { label: 'Priorizados CORE', value: String(counts.core), detail: Math.round(counts.core / max * 100) + '% de la cartera', color: '#5B2A86', pct: counts.core / max * 100 },
-      { label: 'Con resolución', value: String(counts.res), detail: 'Acto administrativo emitido', color: '#5B2A86', pct: counts.res / max * 100 },
-      { label: 'En ejecución', value: String(counts.eje), detail: 'Con recursos en operación', color: '#0E7C86', pct: counts.eje / max * 100 },
-      { label: 'Alertas activas', value: String(alertRows.length), detail: alertRows.length ? 'Requieren gestión' : 'Sin pendientes', color: alertRows.length ? '#C62828' : '#6B7A8D', pct: alertRows.length / max * 100 },
-      { label: 'Monto priorizado CORE', value: showMontos ? this.short(montoCore) : '—', detail: counts.core + ' iniciativas · cartera ' + this.short(montoTotal), color: '#0B2545', pct: montoTotal ? montoCore / montoTotal * 100 : 0 }
+      {
+        label: 'Proyectos visibles', value: String(total),
+        detail: raw.length + ' en la planilla · ' + dinero(montoTotal),
+        extra: inconsistentes.length ? inconsistentes.length + ' con datos inconsistentes' : '',
+        extraColor: '#B77900', color: '#0B2545', pct: 100
+      },
+      {
+        label: 'Factibilidad favorable', value: String(counts.ff),
+        detail: Math.round(counts.ff / max * 100) + '% de la cartera visible',
+        extra: '', extraColor: '#6B7A8D', color: '#2E7D32', pct: counts.ff / max * 100
+      },
+      {
+        label: 'A&C favorable', value: String(counts.acf),
+        detail: dinero(montoAcf) + ' · ' + counts.ac + ' con dictamen registrado',
+        extra: '', extraColor: '#6B7A8D', color: '#2E7D32', pct: counts.acf / max * 100
+      },
+      {
+        label: 'Priorizados CORE', value: String(counts.core),
+        detail: dinero(montoCore) + ' · ' + Math.round(counts.core / max * 100) + '% de la cartera visible',
+        extra: enTramite(coreTram), extraColor: '#B77900', color: '#5B2A86', pct: counts.core / max * 100
+      },
+      {
+        label: 'Con resolución', value: String(counts.res),
+        detail: dinero(montoRes) + ' · según marca de resolución aprobatoria',
+        extra: enTramite(resTram), extraColor: '#B77900', color: '#5B2A86', pct: counts.res / max * 100
+      },
+      {
+        label: 'En ejecución', value: String(counts.eje),
+        detail: enCurso + ' en curso · ' + terminados + ' terminados',
+        extra: '', extraColor: '#6B7A8D', color: '#0E7C86', pct: counts.eje / max * 100
+      },
+      {
+        label: 'Alertas e inconsistencias', value: String(alertRows.length),
+        detail: alertRows.length ? 'Requieren gestión' : 'Sin pendientes',
+        extra: inconsistentes.length ? inconsistentes.length + ' por datos fuera de dominio' : '',
+        extraColor: '#B77900',
+        color: alertRows.length ? '#C62828' : '#6B7A8D', pct: alertRows.length / max * 100
+      },
+      {
+        label: 'Monto priorizado CORE', value: dinero(montoCore),
+        /* El detalle también se oculta cuando los montos están ocultos: antes
+           imprimía el total de la cartera al lado de un valor tapado. */
+        detail: counts.core + ' iniciativas · cartera ' + dinero(montoTotal),
+        extra: '', extraColor: '#6B7A8D',
+        color: '#0B2545', pct: montoTotal ? montoCore / montoTotal * 100 : 0
+      }
     ];
 
-    let prev = null;
+    /* Embudo. Cada hito se mide de forma independiente, así que los conjuntos NO
+       están anidados y el «embudo» puede subir. Antes eso se pintaba de verde
+       como «sin caída»; ahora se declara: se compara el conjunto de cada hito
+       con el del anterior y se informa cuántos entran sin venir del hito previo,
+       que es una alarma de consistencia, no un dato neutro. */
+    const setDe = {};
+    this.MILESTONES.forEach(m => { setDe[m.k] = new Set(d.filter(m.test)); });
+    let prevK = null;
     const funnel = this.MILESTONES.map((m, i) => {
       const n = counts[m.k];
       const pct = Math.round(n / max * 100);
-      const delta = prev === null ? 0 : n - prev;
-      const drop = prev === null ? 'base' : (delta === 0 ? 'sin caída' : (delta > 0 ? '+' + delta : '−' + Math.abs(delta)));
-      const dropColor = prev === null ? '#8B96A3' : (delta === 0 ? '#2E7D32' : (delta > 0 ? '#0E7C86' : '#C62828'));
-      prev = n;
+      const prevN = prevK === null ? null : counts[prevK];
+      const fuera = prevK === null ? 0 : [...setDe[m.k]].filter(r => !setDe[prevK].has(r)).length;
+      const delta = prevN === null ? 0 : n - prevN;
+      let drop, dropColor;
+      if (prevN === null) { drop = 'base'; dropColor = '#8B96A3'; }
+      else if (fuera > 0) { drop = (delta >= 0 ? '+' + delta : '−' + Math.abs(delta)) + ' · ' + fuera + ' fuera de secuencia'; dropColor = '#B77900'; }
+      else if (delta === 0) { drop = 'sin caída'; dropColor = '#2E7D32'; }
+      else { drop = '−' + Math.abs(delta); dropColor = '#C62828'; }
+      prevK = m.k;
       const on = S.hito === m.k;
       const c1 = i >= 4 ? '#5B2A86' : (i >= 2 ? '#0E7C86' : '#0B2545');
       const c2 = i >= 4 ? '#8250B4' : (i >= 2 ? '#3FA9AF' : '#315D88');
@@ -806,30 +2177,44 @@ class Component extends DCLogic {
       (e, i) => this.FONDO_COLORS[i % this.FONDO_COLORS.length]
     ).map(e => ({ ...e, montoShort: showMontos ? this.short(e.monto) : '', onClick: () => this.set({ fondo: S.fondo === e.label ? '' : e.label }) }));
 
+    /* Dona de ejecución. Ahora los tramos son EXHAUSTIVOS y excluyentes —salen de
+       ejeEstado(), que devuelve siempre uno de cinco valores—, de modo que la
+       suma de los segmentos es igual al número del centro. Antes un estado fuera
+       del vocabulario (p. ej. «Suspendido») no caía en ningún tramo y el centro
+       decía 3 sobre una rueda que representaba 1. */
     const conCore = d.filter(r => this.coreOk(r));
-    const ejeBuckets = [
-      { label: 'En ejecución', color: '#0E7C86', test: r => /ejecuci[oó]n|en curso|iniciad/i.test(this.clean(r.estadoEjecucion)) },
-      { label: 'Por iniciar', color: '#B77900', test: r => /por iniciar|no iniciad/i.test(this.clean(r.estadoEjecucion)) || (!this.has(r.estadoEjecucion) && this.has(r.fechaInicioEjecucion)) },
-      { label: 'Terminado', color: '#546E7A', test: r => /terminad|cerrad|finaliz/i.test(this.clean(r.estadoEjecucion)) },
-      { label: 'Sin informar', color: '#CBD5E1', test: r => !this.has(r.estadoEjecucion) && !this.has(r.fechaInicioEjecucion) }
-    ];
-    const usedEje = new Set();
-    const ejeEntries = ejeBuckets.map(b => {
-      const items = conCore.filter(r => !usedEje.has(r) && b.test(r));
-      items.forEach(r => usedEje.add(r));
-      return { label: b.label, n: items.length, c: b.color };
-    }).filter(e => e.n > 0);
-    const ejecucion = donut(ejeEntries.length ? ejeEntries : [{ label: 'Sin proyectos con acuerdo', n: 1, c: '#E5EAF1' }], e => e.c);
+    const ejeOrden = ['ejecucion', 'porIniciar', 'terminado', 'otro', 'sinInformar'];
+    const ejeEntries = ejeOrden.map(k => ({
+      label: this.EJE_LABEL[k], c: this.EJE_COLOR[k],
+      n: conCore.filter(r => this.ejeEstado(r) === k).length
+    })).filter(e => e.n > 0);
+    const ejecucion = donut(ejeEntries.length ? ejeEntries : [{ label: 'Sin proyectos con acuerdo CORE', n: 0, c: '#E5EAF1' }], e => e.c);
 
     const comunaMap = {};
     d.forEach(r => { const k = this.clean(r.comuna) || 'Sin comuna'; comunaMap[k] = comunaMap[k] || { n: 0, monto: 0 }; comunaMap[k].n++; comunaMap[k].monto += this.parseMoney(r.monto); });
-    const comunaList = Object.entries(comunaMap).sort((a, b) => b[1].monto - a[1].monto).slice(0, 9);
+    const comunaTodas = Object.entries(comunaMap).sort((a, b) => b[1].monto - a[1].monto);
+    const comunaList = comunaTodas.slice(0, 9);
     const maxComuna = comunaList.length ? comunaList[0][1].monto || 1 : 1;
     const comunas = comunaList.map(([name, v]) => ({
-      name, n: v.n + (v.n === 1 ? ' proy.' : ' proy.'), monto: showMontos ? this.short(v.monto) : '',
-      pct: Math.max(2, Math.round(v.monto / maxComuna * 100)),
+      name, n: v.n + (v.n === 1 ? ' proy.' : ' proys.'), monto: showMontos ? this.short(v.monto) : '',
+      /* Con los montos ocultos el ancho ya no puede seguir siendo proporcional:
+         el ranking y las proporciones se leían igual con las cifras tapadas. */
+      pct: showMontos ? Math.max(2, Math.round(v.monto / maxComuna * 100)) : 100,
       onClick: () => this.set({ comuna: S.comuna === name ? '' : name })
     }));
+    /* El corte a nueve comunas era invisible: en una cartera regional se ocultaba
+       la mayor parte del territorio bajo el rótulo «distribución territorial». */
+    const comunasResto = comunaTodas.slice(9);
+    if (comunasResto.length) {
+      const restoMonto = comunasResto.reduce((a, x) => a + x[1].monto, 0);
+      const restoN = comunasResto.reduce((a, x) => a + x[1].n, 0);
+      comunas.push({
+        name: 'Otras ' + comunasResto.length + ' comunas',
+        n: restoN + ' proys.', monto: showMontos ? this.short(restoMonto) : '',
+        pct: showMontos ? Math.max(2, Math.round(restoMonto / maxComuna * 100)) : 100,
+        onClick: () => this.set({ comuna: '' })
+      });
+    }
 
     const evMap = {};
     d.forEach(r => {
@@ -847,7 +2232,13 @@ class Component extends DCLogic {
 
     const montoBars = [
       { label: 'Monto solicitado (cartera visible)', value: showMontos ? this.money(montoTotal) : '—', pct: 100, color: '#315D88', detail: total + ' iniciativas' },
-      { label: 'Monto priorizado por el CORE', value: showMontos ? this.money(montoCore) : '—', pct: montoTotal ? Math.max(1, montoCore / montoTotal * 100) : 0, color: '#5B2A86', detail: counts.core + ' con acuerdo del Consejo Regional' }
+      {
+        label: 'Monto priorizado por el CORE', value: showMontos ? this.money(montoCore) : '—',
+        // Idem: la barra no puede delatar la proporción que el valor oculta.
+        pct: showMontos ? (montoTotal ? Math.max(1, montoCore / montoTotal * 100) : 0) : 100,
+        color: '#5B2A86',
+        detail: counts.core + ' con acuerdo del Consejo Regional' + (coreTram ? ' · ' + coreTram + ' en tramitación' : '')
+      }
     ];
 
     const dated = d.map(r => ({ r, s: this.parseDate(r.fechaInicioEjecucion), e: this.parseDate(r.fechaTerminoEjecucion) })).filter(x => x.s || x.e);
@@ -865,8 +2256,8 @@ class Component extends DCLogic {
       const hoyX = Math.min(100, Math.max(0, (Date.now() - min) / span * 100));
       ganttRows = dated.sort((a, b) => (a.s || a.e) - (b.s || b.e)).map(x => {
         const s = x.s || x.e, e = x.e || x.s;
-        const eje = this.clean(x.r.estadoEjecucion);
-        const color = /terminad|cerrad|finaliz/i.test(eje) ? '#546E7A' : (/ejecuci[oó]n|en curso|iniciad/i.test(eje) ? '#0E7C86' : '#B77900');
+        // Mismo clasificador que la dona y que el hito: un solo criterio de color.
+        const color = this.EJE_COLOR[this.ejeEstado(x.r)] || '#B77900';
         return {
           name: this.clean(x.r.nombreProyecto) || 'Sin nombre',
           range: this.fmtDate(x.r.fechaInicioEjecucion) + ' → ' + this.fmtDate(x.r.fechaTerminoEjecucion) + ' · ' + this.proximidad(x.r).text,
@@ -878,30 +2269,54 @@ class Component extends DCLogic {
     }
 
     const colDefs = [['nPostulacion', 'N°', 60, 'left'], ['nombreProyecto', 'Proyecto / institución', 300, 'left'], ['fondo', 'Fondo y comuna', 150, 'left'], ['monto', 'Monto', 120, 'right'], ['_hitos', 'Hitos del proceso', 210, 'left'], ['estadoFactibilidad', 'Factibilidad', 160, 'left'], ['dictamenAC', 'A&C', 180, 'left'], ['acuerdoCore', 'Priorización', 130, 'left'], ['_estado', 'Estado actual', 160, 'left'], ['_alertas', '⚠', 60, 'center']];
-    const columns = colDefs.map(([key, label, w, align]) => ({
-      label, w, align,
-      arrow: S.sortKey === key ? (S.sortDir > 0 ? ' ↑' : ' ↓') : '',
-      onSort: () => { if (key.startsWith('_')) return; this.setState(s => ({ sortKey: key, sortDir: s.sortKey === key ? -s.sortDir : 1 })); }
-    }));
-
-    const sorted = [...d].sort((a, b) => {
-      let av = a[S.sortKey], bv = b[S.sortKey];
-      if (S.sortKey === 'monto') { av = this.parseMoney(av); bv = this.parseMoney(bv); return (av - bv) * S.sortDir; }
-      return String(this.clean(av)).localeCompare(String(this.clean(bv)), 'es', { numeric: true, sensitivity: 'base' }) * S.sortDir;
+    const columns = colDefs.map(([key, label, w, align]) => {
+      // Las columnas derivadas no se pueden ordenar: que no finjan que sí con el
+      // cursor de mano, porque era una afordancia muerta.
+      const ordenable = !key.startsWith('_');
+      return {
+        label, w, align,
+        cursor: ordenable ? 'pointer' : 'default',
+        title: ordenable ? 'Ordenar por ' + label : 'Columna calculada: no se puede ordenar',
+        arrow: ordenable && S.sortKey === key ? (S.sortDir > 0 ? ' ↑' : ' ↓') : '',
+        onSort: () => { if (!ordenable) return; this.setState(s => ({ sortKey: key, sortDir: s.sortKey === key ? -s.sortDir : 1 })); }
+      };
     });
+
+    const sorted = this.ordenar(d);
 
     const fondoTone = { Cultura: ['#F1EDFA', '#4C2A7A'], Deporte: ['#EAF3F4', '#0B4A50'], Educación: ['#EAF1F8', '#1E3A5F'], Patrimonio: ['#FBF3E4', '#6B4A00'] };
     const rows = sorted.map(r => {
       const est = this.estado(r);
       const al = this.alerts(r);
-      const last = this.progress(r);
+      const inc = this.inconsistencias(r);
       const tone = fondoTone[this.clean(r.fondo)] || ['#EEF1F5', '#41505F'];
       // Estado puntual de cada etapa, para las columnas a la derecha de los hitos.
       const tf = this.tonoPill(r.estadoFactibilidad);
       const acTxt = this.clean(r.dictamenAC) || this.clean(r.estadoAC);
       const ta = this.tonoPill(acTxt);
-      const prioTxt = this.coreOk(r) ? 'Priorizado CORE' : this.clean(r.pronunciamiento);
-      const tp = this.coreOk(r) ? { bg: '#F4EDFB', color: '#5B2A86' } : this.tonoPill(prioTxt);
+      /* Columna Priorización: ahora habla de la MARCA y sabe decir los cuatro
+         casos. «Sin priorizar» queda reservado para No y para vacío —que se
+         distinguen por el color y por el subtítulo—, «CORE en tramitación» deja
+         de ser invisible y un valor fuera de dominio se muestra tal cual, en
+         rojo. El pronunciamiento se baja al subtítulo: viene de A&C, no de la
+         marca, y ocupando el título hacía pasar un dato por otro. */
+      const mc = this.marca(r, 'acuerdoCore');
+      const tp = this.tonoMarca(mc.estado);
+      let prioTxt;
+      if (mc.estado === 'si') prioTxt = 'Priorizado CORE';
+      else if (mc.estado === 'tramitacion') prioTxt = 'CORE en tramitación';
+      /* La etiqueta, nunca el crudo pelado: con el crudo vacío el respaldo
+         `|| 'Sin priorizar'` rotulaba un fuera de dominio igual que un «No». */
+      else if (mc.estado === 'desconocido') prioTxt = mc.label;
+      else prioTxt = 'Sin priorizar';
+      const prioSub = [
+        mc.estado === 'no' ? 'Acuerdo CORE: No' : (mc.estado === 'vacio' ? 'Sin marca de acuerdo' : ''),
+        this.clean(r.acuerdoCoreNumero),
+        this.has(r.acuerdoCoreFecha) ? this.fmtDate(r.acuerdoCoreFecha) : '',
+        this.clean(r.pronunciamiento)
+      ].filter(Boolean).join(' · ');
+      const mr = this.marca(r, 'resolucionMarca');
+      const prox = this.proximidad(r);   // se pedía dos veces por fila, con dos parseDate cada vez
       return {
         n: this.clean(r.nPostulacion) || '—',
         proyecto: this.clean(r.nombreProyecto) || 'Sin nombre',
@@ -910,27 +2325,35 @@ class Component extends DCLogic {
         comuna: this.clean(r.comuna) || '—',
         monto: showMontos ? this.money(this.parseMoney(r.monto)) : '—',
         hitos: this.hitoCells(r),
-        hitoLabel: this.filled(r) + ' de 7 hitos cumplidos',
+        // «Cumplidos» era falso para los hitos registrados fuera de secuencia.
+        hitoLabel: this.filled(r) + ' de ' + this.MILESTONES.length + ' hitos registrados',
         fact: this.clean(r.estadoFactibilidad) || '—', factBg: tf.bg, factColor: tf.color,
         factSub: this.clean(r.evaluadorFactibilidad) || '',
         ac: acTxt || '—', acBg: ta.bg, acColor: ta.color,
         acSub: [this.has(r.dictamenAC) ? this.clean(r.estadoAC) : '', this.has(r.rondaAC) ? 'R' + this.clean(r.rondaAC) : ''].filter(Boolean).join(' · '),
         prio: prioTxt || 'Sin priorizar', prioBg: tp.bg, prioColor: tp.color,
-        prioSub: [this.clean(r.acuerdoCoreNumero), this.has(r.acuerdoCoreFecha) ? this.fmtDate(r.acuerdoCoreFecha) : ''].filter(Boolean).join(' · '),
+        prioSub: prioSub || (mr.estado === 'si' ? 'Resolución: Sí' : ''),
         estado: est.label, estadoBg: est.bg, estadoColor: est.color,
-        prox: this.proximidad(r).text, proxColor: this.proximidad(r).color,
-        alertBadge: al.length ? String(al.length) : '—',
+        prox: prox.text, proxColor: prox.color,
+        // El indicador distingue alerta de proceso (⚠) de dato roto (⌀).
+        alertBadge: (al.length ? '⚠ ' + al.length : '') + (al.length && inc.length ? ' · ' : '') + (inc.length ? '⌀ ' + inc.length : '') || '—',
         rowBg: S.sel === r ? '#F0F7F8' : 'transparent',
         onOpen: () => this.setState({ sel: r })
       };
     });
 
+    /* Tarjetas de la pestaña Alertas. Dos familias con tratamiento distinto:
+       la alerta de proceso (roja) y la inconsistencia de datos (ámbar). Un valor
+       fuera de dominio ya no puede quedarse sin dónde aparecer (T7). */
     const alertCards = alertRows.map(r => {
       const est = this.estado(r);
+      const al = this.alerts(r).map(t => ({ tipo: 'Alerta de proceso', text: t, bg: '#FFF1F1', color: '#8E1F1F', borde: '#F4D3D3' }));
+      const inc = this.inconsistencias(r).map(t => ({ tipo: 'Inconsistencia de datos', text: t, bg: '#FFF8E6', color: '#7A5300', borde: '#F0DDAE' }));
       return {
         n: this.clean(r.nPostulacion), proyecto: this.clean(r.nombreProyecto) || 'Sin nombre',
         institucion: this.clean(r.institucion) || '—', estado: est.label,
-        items: this.alerts(r).map(t => ({ text: t })),
+        borde: al.length ? '#C62828' : '#B77900',
+        items: al.concat(inc),
         onOpen: () => this.setState({ sel: r })
       };
     });
@@ -949,23 +2372,55 @@ class Component extends DCLogic {
       detEstado = this.estado(sel).label;
       detMonto = showMontos ? this.money(this.parseMoney(sel.monto)) : '—';
       detFondo = [this.clean(sel.fondo), this.clean(sel.categoria)].filter(Boolean).join(' · ') || 'Sin fondo';
-      const L = (u, label) => { const s = this.clean(u); if (/^https?:\/\//i.test(s)) detLinks.push({ url: s, label }); };
+
+      const F = (k, v, span, bg) => detFields.push({ k, v: this.has(v) ? this.clean(v) : '—', span: span || 'auto', bg: bg || '#fff' });
+      /**
+       * Enlace del expediente. Si hay URL se muestra el botón; si NO hay, no se
+       * deja hueco: simplemente no se agrega. Y si el valor existe pero no es una
+       * URL (un identificador, un nombre de archivo), en vez de descartarlo en
+       * silencio se muestra como dato, porque saber que el respaldo existe
+       * también sirve.
+       */
+      const L = (u, label) => {
+        const s = this.clean(u);
+        if (!s) return;
+        if (/^https?:\/\//i.test(s)) detLinks.push({ url: s, label });
+        else F(label + ' (referencia)', s);
+      };
       L(sel.enlacePautaFactibilidad, 'Pauta factibilidad'); L(sel.pdfFactibilidad, 'PDF factibilidad');
       L(sel.enlacePautaAC, 'Pauta A&C'); L(sel.pdfAC, 'PDF A&C');
-      L(sel.acuerdoCoreUrl, 'Acuerdo CORE'); L(sel.resolucionUrl, 'Resolución');
-      const F = (k, v, span, bg) => detFields.push({ k, v: this.has(v) ? this.clean(v) : '—', span: span || 'auto', bg: bg || '#fff' });
+      // Columnas R y U del contrato: los enlaces del acuerdo y de la resolución.
+      L(sel.acuerdoCoreUrl, 'Enlace acuerdo CORE'); L(sel.resolucionUrl, 'Enlace resolución aprobatoria');
+
       F('Comuna', sel.comuna); F('Etapa declarada', sel.etapa);
       F('Factibilidad', sel.estadoFactibilidad); F('Evaluador/a factibilidad', sel.evaluadorFactibilidad);
-      F('Dictamen A&C', sel.dictamenAC); F('Estado A&C', sel.estadoAC);
+      F('Dictamen A&C', sel.dictamenAC); F('Estado A&C (derivado del dictamen)', sel.estadoAC);
       F('Evaluador/a A&C', sel.evaluadorAC); F('Ronda A&C', sel.rondaAC);
       F('Observaciones abiertas', sel.observacionesAbiertasAC); F('Observaciones cerradas', sel.observacionesCerradasAC);
       F('Fecha evaluación A&C', this.fmtDate(sel.fechaEvaluacionAC)); F('Pronunciamiento', sel.pronunciamiento);
-      F('Acuerdo CORE', [this.clean(sel.acuerdoCore), this.clean(sel.acuerdoCoreNumero), this.has(sel.acuerdoCoreFecha) ? this.fmtDate(sel.acuerdoCoreFecha) : ''].filter(Boolean).join(' · '));
-      F('Resolución', [this.clean(sel.resolucionNumero), this.has(sel.resolucionFecha) ? this.fmtDate(sel.resolucionFecha) : ''].filter(Boolean).join(' · '));
+
+      /* Las marcas se muestran como dato PROPIO —Sí / No / En tramitación— y
+         separadas de sus respaldos: el N°, la fecha y el enlace documentan el
+         acto, pero es la marca la que lo declara (D3). Un valor fuera de dominio
+         se imprime tal cual, rotulado, para que se pueda ir a corregir la celda. */
+      const mCore = this.marca(sel, 'acuerdoCore');
+      const mRes = this.marca(sel, 'resolucionMarca');
+      const textoMarca = m => m.estado === 'desconocido'
+        ? m.label + ' — valor fuera de dominio'
+        : (m.label || 'Sin marca registrada');
+      F('Acuerdo CORE (marca declarada)', textoMarca(mCore), 'auto', mCore.estado === 'desconocido' ? '#FFF6F6' : '#FAFBFD');
+      F('Resolución aprobatoria (marca declarada)', textoMarca(mRes), 'auto', mRes.estado === 'desconocido' ? '#FFF6F6' : '#FAFBFD');
+      F('Respaldo del acuerdo CORE', [this.clean(sel.acuerdoCoreNumero), this.has(sel.acuerdoCoreFecha) ? this.fmtDate(sel.acuerdoCoreFecha) : ''].filter(Boolean).join(' · '));
+      F('Respaldo de la resolución', [this.clean(sel.resolucionNumero), this.has(sel.resolucionFecha) ? this.fmtDate(sel.resolucionFecha) : ''].filter(Boolean).join(' · '));
+
       F('Ejecución', [this.fmtDate(sel.fechaInicioEjecucion), this.fmtDate(sel.fechaTerminoEjecucion), this.clean(sel.estadoEjecucion)].filter(x => x && x !== '—').join(' · '));
-      F('RUT institución', sel.rutOrganizacion || sel.rut);
+      // Code.gs emite `rutInstitucion`; las dos claves que se leían antes no las
+      // emitía nadie, así que el RUT nunca se mostraba.
+      F('RUT institución', sel.rutInstitucion || sel.rutOrganizacion || sel.rut);
       const al = this.alerts(sel);
       F('Alertas', al.length ? al.join('\n') : 'Sin alertas', '1/-1', al.length ? '#FFF6F6' : '#fff');
+      const inc = this.inconsistencias(sel);
+      if (inc.length) F('Inconsistencias de datos', inc.join('\n'), '1/-1', '#FFF8E6');
       // Observaciones de cada etapa: acá viene el detalle de los criterios y el
       // motivo de una evaluación pendiente (correcciones 2026-07-27).
       if (this.has(sel.observacionesFactibilidad)) F('Observaciones de Factibilidad', sel.observacionesFactibilidad, '1/-1', '#FAFBFD');
@@ -976,22 +2431,52 @@ class Component extends DCLogic {
       if (this.has(coment)) F('Comentario', coment, '1/-1', '#FAFBFD');
     }
 
+    const alc = S.alcanceExport === 'todos' ? 'todos' : 'filtrados';
+    /* Encabezado siempre visible —y por lo tanto también impreso— con el estado
+       de los filtros y el alcance. Antes los chips vivían dentro del bloque
+       data-noprint y el PDF de una cartera filtrada era idéntico al de la
+       cartera completa. */
+    /* «En esta página» se MIDE sobre las mismas filas que se están rindiendo, no
+       sobre lo que el selector promete: así el encabezado no puede declarar un
+       alcance que la tabla impresa no contiene. Antes decía «todos los proyectos
+       de la planilla (9)» mientras la tabla mostraba 4, porque la corrección de
+       alcance vivía dentro del handler del botón y un Ctrl+P la esquivaba. */
+    const filtrosImpresos =
+      (activos.length ? activos.map(f => f.etiqueta + ': ' + f.valor).join(' · ') : 'Sin filtros') +
+      (S.filtrosSuspendidos ? ' (suspendidos durante esta impresión)' : '') +
+      ' — En esta página: ' + total + ' de ' + raw.length + ' proyectos' +
+      ' — Alcance de CSV, Word e impresión: ' +
+      (alc === 'todos' ? 'todos los proyectos de la planilla (' + raw.length + ')' : 'sólo los filtrados (' + total + ')');
+
     return {
       loading: S.loading, notice: S.notice, tabs, selects, chips, hasChips: chips.length > 0,
       q: S.q, onSearch: e => this.set({ q: e.target.value }),
       onClear: () => this.set({ q: '', etapa: '', fondo: '', comuna: '', evaluador: '', hito: '', plazo: '' }),
-      onReload: () => this.load(), onExport: this.exportCsv, onPrint: () => window.print(),
-      updatedLabel: S.demo ? 'Datos de demostración' : (S.updatedAt ? 'Actualizado: ' + new Date(S.updatedAt).toLocaleString('es-CL') : 'Conectado al Web App'),
-      sourcesLabel: S.sources ? ('Fuentes · Factibilidad ' + (S.sources.factibilidad || 0) + ' · A&C ' + (S.sources.admisibilidadConsistencia || 0) + ' · CORE ' + (S.sources.priorizacionCore || 0)) : 'Cruce por N° de postulación',
+      onReload: () => this.load(),
+      onExport: this.exportCsv,
+      onExportDocx: () => this.exportDocx(alc),
+      onPrint: this.imprimir,
+      alcanceExport: alc,
+      alcanceOpciones: [
+        { value: 'filtrados', label: 'Sólo los filtrados (' + total + ')' },
+        { value: 'todos', label: 'Todos los proyectos (' + raw.length + ')' }
+      ],
+      onAlcanceExport: e => this.setState({ alcanceExport: e.target.value === 'todos' ? 'todos' : 'filtrados' }),
+      filtrosImpresos,
+      // Sin guarda, una marca de tiempo no parseable imprimía «Invalid Date».
+      updatedLabel: S.demo ? 'Datos de demostración' : (this.fechaHora(S.updatedAt) ? 'Actualizado: ' + this.fechaHora(S.updatedAt) : 'Conectado al Web App'),
+      // «CORE» ya no es un conteo de filas disfrazado de conteo de acuerdos.
+      sourcesLabel: S.sources ? ('Fuentes · ' + this.fuentesTexto()) : 'Cruce por N° de postulación',
       visibleLabel: total + ' de ' + raw.length + ' proyectos',
       skeletons: [1, 2, 3, 4, 5, 6, 7, 8].map(i => ({ i })),
-      showPanorama: !S.loading && S.view === 'panorama',
-      showTabla: !S.loading && S.view === 'proyectos',
-      showAlertas: !S.loading && S.view === 'alertas',
+      showPanorama: !S.loading && view === 'panorama',
+      showTabla: !S.loading && view === 'proyectos',
+      showAlertas: !S.loading && view === 'alertas',
       kpis, funnel, fondos, totalVisible: String(total),
       ejecucion, ejecucionTotal: String(conCore.length),
       comunas, evaluadores, montoBars,
-      tasaCore: (montoTotal ? Math.round(montoCore / montoTotal * 100) : 0) + '%',
+      // La tasa es un dato de dinero: con los montos ocultos, tampoco se muestra.
+      tasaCore: showMontos ? ((montoTotal ? Math.round(montoCore / montoTotal * 100) : 0) + '%') : '—',
       ganttMonths, ganttRows, ganttSubtitle,
       columns, rows, emptyRows: rows.length === 0,
       alertCards, noAlertas: alertCards.length === 0,
@@ -1000,6 +2485,7 @@ class Component extends DCLogic {
       onCloseBackdrop: e => { if (e.target === e.currentTarget) this.setState({ sel: null }); }
     };
   }
+
 }
 </script>
 </body>

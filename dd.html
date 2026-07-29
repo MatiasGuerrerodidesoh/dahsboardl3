@@ -235,15 +235,49 @@ function applyFilters(){
   });
   sortRows(); renderKPIs(); renderPipeline(); renderTable();
 }
+/* ---------------------------------------------------------------------------
+   VOCABULARIO DEL PROCESO — misma definición que «Dashboard FNDR L3.dc.html»
+   (signo/factFav/acFav) y que apps-script/Code.gs (signo_/esFactibilidad…).
+   Este archivo arrastraba el defecto original verbatim:
+   /favorable|habilitar|factible/ da VERDADERO para «NO FACTIBLE TÉCNICAMENTE»,
+   «No factible» y «no avanza, con pronunciamiento desfavorable», porque
+   «factible» está dentro de «no factible» y «favorable» dentro de
+   «desfavorable». Los tres subían el KPI «Factibilidad favorable».
+   Acá el conteo se decide por IGUALDAD contra los literales canónicos, y el
+   texto libre sólo como último recurso, con la negación resuelta por regla.
+   --------------------------------------------------------------------------- */
+function norm(v){return clean(v).replace(/\u00a0/g," ").replace(/\s+/g," ").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim()}
+const RE_NEG_EXPL=/desestim|desfavorable|inadmis|rechaz|no factible|no es factible|no contin|no avanza|no subsan|no admisible|no elegible/;
+const RE_NEG_ANTE=/\b(?:no|sin|nunca|jamas|tampoco)\b(?:\s+[a-z0-9]+){0,2}?\s+(?:favorable|habilitar|habilitad|factible|cumple|priorizad|aprobad|avanza|terminad)/;
+const RE_NEG_POST=/(?:favorable|habilitar|habilitad|factible|cumple|priorizad|aprobad|avanza|terminad)[a-z]*\b[^a-z0-9]{0,4}(?:no|sin|nunca|jamas|tampoco)\s*$/;
+const RE_PEND=/observ|pendiente|revision|espera|subsan|incomplet|tramit/;
+const RE_POS=/favorable|habilitar|habilitad|factible|cumple|priorizad|aprobad|avanza|terminad/;
+function signo(v){const n=norm(v);if(!n)return 'vacio';if(RE_NEG_EXPL.test(n))return 'negativo';if(RE_NEG_ANTE.test(n)||RE_NEG_POST.test(n))return 'negativo';if(RE_PEND.test(n))return 'pendiente';if(RE_POS.test(n))return 'positivo';return 'otro'}
+const LIT_FACT_FAV=['habilitar formulacion de expediente','factible tecnicamente, habilitado para formulacion de expediente'];
+const LIT_FACT=LIT_FACT_FAV.concat(['observar para subsanacion','desestimar','evaluacion pendiente']);
+const LIT_AC_FAV='evaluacion tecnica favorable';
+const LIT_AC=[LIT_AC_FAV,'con observaciones','desestimado por no subsanacion','revision pendiente'];
+function factFav(r){const n=norm(r.estadoFactibilidad);if(!n)return false;if(LIT_FACT_FAV.includes(n))return true;if(LIT_FACT.includes(n))return false;return signo(n)==='positivo'}
+/* Manda el Dictamen y SÓLO el dictamen. Concatenarlo con «Estado proyecto» hacía
+   que un «favorable» en cualquiera de las dos columnas contara el proyecto. */
+function acFav(r){const n=norm(r.dictamenAC);if(!n)return false;if(n===LIT_AC_FAV)return true;if(LIT_AC.includes(n))return false;return signo(n)==='positivo'}
+/* Las marcas de acuerdo CORE y de resolución las DECLARA la planilla (columnas O
+   y S); el N° y el enlace documentan el acto, no lo acreditan. Si el payload no
+   trae la marca (Web App anterior al contrato) se cae al respaldo, que es lo
+   único disponible en ese caso. */
+function marcaSi(r,base){const e=clean(r[base+'Estado']);return e?e==='si':null}
+function coreOk(r){const m=marcaSi(r,'acuerdoCore');return m===null?(has(r.acuerdoCoreUrl)||has(r.acuerdoCoreNumero)):m}
+function resOk(r){const m=marcaSi(r,'resolucionMarca');return m===null?(has(r.resolucionUrl)||has(r.resolucionNumero)):m}
+
 function renderKPIs(){
   const d=FILTERED,total=d.length;
-  const fact=d.filter(r=>/favorable|habilitar|factible/i.test(clean(r.estadoFactibilidad))).length;
-  const ac=d.filter(r=>/favorable|admisible/i.test(clean(r.dictamenAC)+' '+clean(r.estadoAC))).length;
-  const core=d.filter(r=>has(r.acuerdoCoreUrl)||has(r.acuerdoCoreNumero)).length;
-  const res=d.filter(r=>has(r.resolucionUrl)||has(r.resolucionNumero)).length;
+  const fact=d.filter(factFav).length;
+  const ac=d.filter(acFav).length;
+  const core=d.filter(coreOk).length;
+  const res=d.filter(resOk).length;
   const ejec=d.filter(r=>/ejecuci[oó]n|en curso|iniciad/i.test(clean(r.estadoEjecucion))||has(r.fechaInicioEjecucion)).length;
   const alert=d.filter(r=>Array.isArray(r.alertas)&&r.alertas.length).length;
-  const montoCore=d.filter(r=>has(r.acuerdoCoreUrl)||has(r.acuerdoCoreNumero)).reduce((a,r)=>a+parseMoney(r.monto),0);
+  const montoCore=d.filter(coreOk).reduce((a,r)=>a+parseMoney(r.monto),0);
   document.getElementById('kpis').innerHTML=`
     ${kpi('Proyectos visibles',total,'')}
     ${kpi('Factibilidad favorable',fact,'verde')}
@@ -258,9 +292,9 @@ function kpi(label,value,cls,detail=''){return `<div class="kpi ${cls}"><div cla
 
 function renderPipeline(){
   const defs=[
-    ['Factibilidad',r=>has(r.estadoFactibilidad)],['Fact. favorable',r=>/favorable|habilitar|factible/i.test(clean(r.estadoFactibilidad))],
-    ['En A&C',r=>has(r.dictamenAC)||has(r.estadoAC)],['A&C favorable',r=>/favorable|admisible/i.test(clean(r.dictamenAC)+' '+clean(r.estadoAC))],
-    ['Aprobado CORE',r=>has(r.acuerdoCoreUrl)||has(r.acuerdoCoreNumero)],['Con resolución',r=>has(r.resolucionUrl)||has(r.resolucionNumero)],
+    ['Factibilidad',r=>has(r.estadoFactibilidad)],['Fact. favorable',factFav],
+    ['En A&C',r=>has(r.dictamenAC)||has(r.estadoAC)],['A&C favorable',acFav],
+    ['Aprobado CORE',coreOk],['Con resolución',resOk],
     ['En ejecución',r=>has(r.fechaInicioEjecucion)||/ejecuci[oó]n|en curso|iniciad/i.test(clean(r.estadoEjecucion))]
   ];
   const max=Math.max(FILTERED.length,1);
@@ -297,8 +331,13 @@ function renderCell(c,r,i){
   return escapeHtml(text);
 }
 
-function statusPill(v){const s=clean(v);if(!s)return '<span class="muted">—</span>';const n=s.toLowerCase();let cls='gris';if(/favorable|habilitar|factible|admisible|terminad|cerrad/.test(n))cls='verde';else if(/observ|espera|pendiente|revisi[oó]n|por iniciar/.test(n))cls='amarillo';else if(/desestim|desfavorable|inadmis|no factible|suspend/.test(n))cls='rojo';else if(/core|resoluci[oó]n|ejecuci[oó]n/.test(n))cls='morado';return `<span class="pill ${cls}" title="${escapeAttr(s)}">${escapeHtml(s)}</span>`}
-function stagePill(v){const s=clean(v);if(!s)return '—';let cls='gris';if(/terminada|resoluci[oó]n|aprobado core|priorizado/.test(s.toLowerCase()))cls='morado';if(/favorable/.test(s.toLowerCase()))cls='verde';if(/no contin/.test(s.toLowerCase()))cls='rojo';if(/ejecuci[oó]n/.test(s.toLowerCase()))cls='amarillo';return `<span class="pill ${cls}">${escapeHtml(s)}</span>`}
+/* El color lo decide signo(), que evalúa lo NEGATIVO primero. Antes la primera
+   rama era /favorable|habilitar|factible|…/ → verde y la rama roja quedaba
+   tercera, inalcanzable para cualquier texto que contuviera «factible» o
+   «favorable»: «NO FACTIBLE TÉCNICAMENTE» se pintaba verde. */
+function tonoClase(v){const s=signo(v);if(s==='negativo')return 'rojo';if(s==='pendiente')return 'amarillo';if(s==='positivo')return 'verde';return 'gris'}
+function statusPill(v){const s=clean(v);if(!s)return '<span class="muted">—</span>';let cls=tonoClase(s);if(cls==='gris'&&/core|resoluci[oó]n|ejecuci[oó]n/.test(norm(s)))cls='morado';if(/suspend/.test(norm(s)))cls='rojo';return `<span class="pill ${cls}" title="${escapeAttr(s)}">${escapeHtml(s)}</span>`}
+function stagePill(v){const s=clean(v);if(!s)return '—';const n=norm(s);let cls=tonoClase(s);if(cls==='gris'||cls==='verde'){if(/terminada|resolucion|aprobado core|priorizado/.test(n))cls='morado';if(/ejecucion/.test(n))cls='amarillo'}return `<span class="pill ${cls}">${escapeHtml(s)}</span>`}
 function renderLink(v,label){const s=clean(v);return /^https?:\/\//i.test(s)?`<a class="link" href="${escapeAttr(s)}" target="_blank" rel="noopener">${label}</a>`:''}
 
 function openDrawer(r){
