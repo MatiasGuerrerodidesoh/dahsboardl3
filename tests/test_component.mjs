@@ -26,6 +26,8 @@
  *   J. la CAPA DE DATOS (apps-script/Code.gs) ejecutada sobre planillas de prueba
  *   K. marco de coherencia entre hitos: una sola redacción en las dos capas
  *   L. alcance e impresión: el encabezado no puede declarar lo que no contiene
+ *   M. columna «Asignación» (T-A: planilla aparte, O/P por posición, etiquetas
+ *      reales de la fila 1) y alias Codigo_Postulacion en Iniciativas (T-B)
  *
  *   node tests/test_component.mjs
  */
@@ -94,6 +96,10 @@ c.state.raw = api.data.slice();
 c.state.loading = false;
 c.state.view = 'proyectos';
 c.state.sources = api.sources;
+/* Igual que load(): las etiquetas reales de la hoja Asignación viajan al nivel
+   raíz del payload, no por fila. Que load() de verdad las capture se prueba
+   aparte, en M.9. */
+c.state.asignacionLabels = api.asignacionLabels;
 
 let fail = 0;
 const eq = (cond, msg) => { console.log((cond ? 'ok   ' : 'FAIL ') + msg); if (!cond) fail++; };
@@ -681,6 +687,136 @@ const zipTodos = Buffer.from(todosDocx.bytes).toString('latin1');
 eq(zipTodos.slice(zipTodos.indexOf('<w:hdr')).includes('NO APLICADOS'),
   'L con alcance «todos» el encabezado dice que los filtros no se aplicaron');
 c.state.fondo = ''; c.state.alcanceExport = 'filtrados';
+
+// ===========================================================================
+// M. T-A columna «Asignación» + T-B alias Codigo_Postulacion
+// ===========================================================================
+c.state.q = ''; c.state.etapa = ''; c.state.comuna = ''; c.state.evaluador = ''; c.state.hito = ''; c.state.plazo = '';
+c.state.view = 'proyectos';
+
+// M.1 — la columna existe y está donde el brief la pide: entre «Estado actual» y ⚠.
+const mv = vals();
+const labelsM = mv.columns.map(x => x.label);
+eq(JSON.stringify(labelsM).includes('"Estado actual","Asignación","⚠"'),
+  'M.1 columna «Asignación» inmediatamente a la derecha de «Estado actual» y antes de ⚠: ' + labelsM.join(' | '));
+/* Y la CELDA del template va en esa misma posición: la lista de columnas y el
+   markup son dos definiciones distintas, y pueden divergir en silencio. */
+const posAsig = html.indexOf('{{ r.asignacion }}');
+eq(posAsig > html.indexOf('{{ r.prox }}') && posAsig < html.indexOf('{{ r.alertBadge }}'),
+  'M.1 la celda del template está entre la de Estado actual y la del badge ⚠');
+eq(html.indexOf('{{ r.asignacionSub }}') > posAsig && html.indexOf('{{ r.asignacionSub }}') < html.indexOf('{{ r.alertBadge }}'),
+  'M.1 con la sublínea P dentro de la MISMA celda (patrón fact/factSub)');
+
+// M.2 — los cuatro casos de la celda, sobre el fixture real.
+const filaM = n => mv.rows.find(r => r.n === n);
+eq(filaM('16').asignacion === 'Convenio firmado' && filaM('16').asignacionSub === 'Transferencia programada para agosto',
+  '16: O como línea principal y P como sublínea');
+eq(filaM('1C').asignacion === 'Expediente en formulación' && filaM('1C').asignacionSub === 'Reasignar analista tras feriado legal',
+  '1C: la fila del folio 15 de Asignación anota al canónico 1C (1C ≡ 15)');
+eq(filaM('53').asignacion === 'Asignado' && filaM('53').asignacionSub === '',
+  '53: sólo O — la sublínea se omite');
+eq(filaM('54').asignacion === '—' && filaM('54').asignacionSub === 'Falta certificado de vigencia de la directiva',
+  '54: sólo P — el principal es «—» y la sublínea NO asciende de columna');
+eq(filaM('7').asignacion === '—' && filaM('7').asignacionSub === '',
+  '7: sin fila de Asignación — «—» sin sublínea');
+
+// M.3 — la hoja Asignación ANOTA, nunca crea: el folio 99 no es un proyecto.
+eq(api.data.length === 10 && !crudo('99') && !mv.rows.some(r => r.n === '99'),
+  'M.3 el folio 99 (sólo existe en Asignación) no aparece como proyecto fantasma');
+eq(api.avisos.some(a => a.includes('99') && a.includes('Asignación')),
+  'M.3 y la fila sin cruce queda declarada en avisos, no callada');
+eq(api.sources.asignacion === 5, 'M.3 sources.asignacion = 5 filas con contenido');
+eq(c.fuentesTexto().includes('Asignación 5'),
+  'M.3 el pie de fuentes también audita la hoja: ' + c.fuentesTexto());
+
+// M.4 — las etiquetas REALES de la fila 1 llegan al payload y al modal.
+eq(!!api.asignacionLabels && api.asignacionLabels.o === 'Estado expediente' && api.asignacionLabels.p === 'Observación jefatura',
+  'M.4 payload: asignacionLabels trae los encabezados reales de la fila 1');
+const det16 = expediente(crudo('16')).detFields;
+eq(det16.some(f => f.k === 'Asignación · Estado expediente' && f.v === 'Convenio firmado'),
+  'M.4 el modal rotula O con su etiqueta real, no con «Col. O»');
+eq(det16.some(f => f.k === 'Asignación · Observación jefatura' && f.v === 'Transferencia programada para agosto'),
+  'M.4 y P con la suya');
+const det7 = expediente(crudo('7')).detFields;
+eq(det7.some(f => f.k === 'Asignación · Estado expediente' && f.v === '—'),
+  'M.4 sin datos el modal muestra «—», pero el campo no desaparece');
+const etiquetasPrevias = c.state.asignacionLabels;
+c.state.asignacionLabels = null;
+const detSin = expediente(crudo('16')).detFields;
+eq(detSin.some(f => f.k === 'Asignación · Col. O') && detSin.some(f => f.k === 'Asignación · Col. P'),
+  'M.4 sin asignacionLabels (demo / Web App caído) cae al MISMO fallback que Code.gs');
+c.state.asignacionLabels = etiquetasPrevias;
+
+// M.5 — el buscador ve las anotaciones de Asignación.
+c.state.q = 'feriado legal';
+const porP = vals().rows.map(r => r.n);
+c.state.q = 'convenio firmado';
+const porO = vals().rows.map(r => r.n);
+c.state.q = '';
+eq(JSON.stringify(porP) === JSON.stringify(['1C']), 'M.5 buscar «feriado legal» (columna P) encuentra al 1C: ' + porP.join(','));
+eq(JSON.stringify(porO) === JSON.stringify(['16']), 'M.5 buscar «convenio firmado» (columna O) encuentra al 16: ' + porO.join(','));
+
+// M.6 — CSV: ambos campos, con sus etiquetas reales en el encabezado.
+descargas.length = 0;
+c.state.alcanceExport = 'todos';
+c.exportCsv();
+c.state.alcanceExport = 'filtrados';
+const csvM = descargas[0].texto.replace(/^﻿/, '');
+const lineasM = csvM.split('\n');
+eq(lineasM[0].includes('"Asignación · Estado expediente"') && lineasM[0].includes('"Asignación · Observación jefatura"'),
+  'M.6 el encabezado del CSV lleva las etiquetas reales de O y P');
+const lineaM = n => lineasM.find(l => l.startsWith('"' + n + '";'));
+eq(lineaM('16').includes('"Convenio firmado"') && lineaM('16').includes('"Transferencia programada para agosto"'),
+  'M.6 la fila 16 exporta O y P');
+eq(lineaM('54').includes('"Falta certificado de vigencia de la directiva"'),
+  'M.6 la fila 54 exporta P aunque O venga vacía');
+eq(lineasM.length === 1 + api.data.length, 'M.6 y el CSV sigue sin filas espurias (' + lineasM.length + ' líneas)');
+
+// M.7 — .docx: las dos columnas con su etiqueta y sus valores.
+const docxM = c.exportDocx('todos', { descargar: false });
+const docM = Buffer.from(docxM.bytes).toString('utf8');
+eq(docM.includes('Asignación · Estado expediente') && docM.includes('Asignación · Observación jefatura'),
+  'M.7 el .docx lleva las dos columnas con su etiqueta real');
+eq(docM.includes('Convenio firmado') && docM.includes('Falta certificado de vigencia de la directiva'),
+  'M.7 y los valores de O y P');
+
+// M.8 — T-B: la llave de Iniciativas puede llamarse Codigo_Postulacion.
+const iniFixture = leerHojas('tests/fixtures/sheets.sim.json').hojas.find(h => h.nombre === 'Iniciativas');
+eq(iniFixture.filas[0].includes('Codigo_Postulacion'),
+  'M.8 fixture: la hoja Iniciativas trae la columna del export nuevo');
+const soloCodigo = ['1C', '45', '51', '52', '53', '54', '55'];
+eq(soloCodigo.every(n => { const f = iniFixture.filas.find(x => x[1] === n); return !!f && f[0] === ''; }),
+  'M.8 fixture: ' + soloCodigo.join(',') + ' traen la llave SÓLO en Codigo_Postulacion');
+eq(soloCodigo.every(n => crudo(n) && c.has(crudo(n).comuna)),
+  'M.8 y esos proyectos cruzan igual: conservan su comuna en el payload');
+/* La misma afirmación pero aislada, sin depender del fixture grande. */
+const exportNuevo = correrDashboard(hojasDePrueba(
+  [['Codigo_Postulacion', 'Nombre_Proyecto', 'Comuna'], ['77', 'Prueba export nuevo', 'Quillota']],
+  [['N° postulación', 'de acuerdo CORE'], ['77', 'Sí']]
+)).payload;
+eq(exportNuevo.data.length === 1 && exportNuevo.data[0].nPostulacion === '77' && exportNuevo.data[0].acuerdoCoreEstado === 'si',
+  'M.8 sin Numero_Ingreso, Codigo_Postulacion crea el proyecto y cruza con Priorización');
+const padronRestaurado = correrDashboard(hojasDePrueba(
+  [['Numero_Ingreso', 'Codigo_Postulacion', 'Nombre_Proyecto'], ['16', '99', 'Dieciséis']],
+  [['N° postulación', 'de acuerdo CORE'], ['16', 'Sí']]
+)).payload;
+eq(padronRestaurado.data.length === 1 && padronRestaurado.data[0].nPostulacion === '16' && padronRestaurado.data[0].acuerdoCoreEstado === 'si',
+  'M.8 si el padrón se restaura, Numero_Ingreso mantiene la prioridad sobre Codigo_Postulacion');
+
+// M.9 — load() de verdad captura asignacionLabels (la ruta de producción).
+const cargado = new Component();
+cargado.props = { mostrarMontos: true, apiUrl: 'x', vistaInicial: 'proyectos' };
+cargado.jsonp = async () => JSON.parse(JSON.stringify(api));
+await cargado.load();
+eq(cargado.state.demo === false && !!cargado.state.asignacionLabels && cargado.state.asignacionLabels.o === 'Estado expediente',
+  'M.9 load() guarda asignacionLabels en el estado');
+const caido = new Component();
+caido.props = { mostrarMontos: true, apiUrl: 'x', vistaInicial: 'proyectos' };
+caido.state.asignacionLabels = { o: 'viejo', p: 'viejo' };
+caido.jsonp = async () => { throw new Error('sin red'); };
+await caido.load();
+eq(caido.state.demo === true && caido.state.asignacionLabels === null,
+  'M.9 y al caer a demo las etiquetas viejas se limpian: el fallback vuelve a mandar');
 
 console.log(fail ? `\n${fail} FALLOS` : '\nTodo OK');
 process.exit(fail ? 1 : 0);

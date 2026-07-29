@@ -47,10 +47,29 @@ function planillaSim(hojas) {
 /**
  * Carga FoliosL3.gs + Code.gs en un contexto aislado y devuelve el contexto,
  * con todas las funciones internas (las de sufijo _) accesibles por nombre.
+ *
+ * `hojas` acepta dos formas:
+ *   · el arreglo histórico de hojas — UNA planilla que se sirve para cualquier
+ *     ID (así siguen funcionando todas las pruebas escritas antes de que
+ *     existiera la planilla de Asignación);
+ *   · { hojas, planillas } tal como lo entrega leerHojas(): `hojas` es la
+ *     planilla principal y `planillas` mapea ID → { hojas } para las planillas
+ *     ADICIONALES que Code.gs abre por su propio ID (hoy, la de «Asignación
+ *     Px Linea 3 Resumen»). Un ID declarado con valor null simula «sin
+ *     acceso»: openById LANZA, igual que en Apps Script real — es la rama de
+ *     degradación que leerAsignacionOP_ tiene que sobrevivir.
+ *
+ * Un ID que no está en `planillas` devuelve la planilla principal, no un
+ * error: es el comportamiento histórico del mock, y hace que las pruebas
+ * viejas ejerciten de paso la degradación «la hoja Asignación no existe acá».
  */
 export function cargarAppsScript(hojas, opciones) {
   const o = opciones || {};
   const ahora = o.ahora === undefined ? AHORA_SIM : o.ahora;
+  const fuente = Array.isArray(hojas)
+    ? { hojas: hojas, planillas: o.planillas || {} }
+    : (hojas || { hojas: [], planillas: {} });
+  const planillas = fuente.planillas || {};
 
   class FechaFija extends Date {
     constructor(...args) {
@@ -62,7 +81,17 @@ export function cargarAppsScript(hojas, opciones) {
   const salidas = [];
   const contexto = {
     console,
-    SpreadsheetApp: { openById: () => planillaSim(hojas) },
+    SpreadsheetApp: {
+      openById: id => {
+        if (Object.prototype.hasOwnProperty.call(planillas, id)) {
+          const decl = planillas[id];
+          // null = «sin acceso»: en Apps Script, openById lanza en ese caso.
+          if (!decl) throw new Error('Sin acceso a la planilla ' + id + ' (simulado)');
+          return planillaSim(decl.hojas || decl);
+        }
+        return planillaSim(fuente.hojas);
+      }
+    },
     ContentService: {
       MimeType: { JSON: 'application/json', JAVASCRIPT: 'text/javascript' },
       createTextOutput(texto) {
@@ -106,7 +135,15 @@ export function hojasDePrueba(iniciativas, priorizacion, extra) {
   return hojas;
 }
 
+/**
+ * Lee el JSON de planillas simuladas. Devuelve { hojas, planillas }: la
+ * planilla principal más las adicionales por ID — la forma que
+ * cargarAppsScript() entiende directamente. Antes devolvía sólo el arreglo
+ * `hojas`; cambió cuando Code.gs empezó a abrir una segunda planilla
+ * (Asignación) por su propio ID.
+ */
 export function leerHojas(rutaJson) {
   const abs = path.isAbsolute(rutaJson) ? rutaJson : path.join(RAIZ, rutaJson);
-  return JSON.parse(fs.readFileSync(abs, 'utf8')).hojas;
+  const doc = JSON.parse(fs.readFileSync(abs, 'utf8'));
+  return { hojas: doc.hojas, planillas: doc.planillas || {} };
 }

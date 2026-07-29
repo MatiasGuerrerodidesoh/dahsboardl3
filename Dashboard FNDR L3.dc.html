@@ -352,7 +352,7 @@ a:hover{color:#0B2545;text-decoration:underline}
           </div>
         </div>
         <div style="overflow:auto;max-height:74vh">
-          <table style="border-collapse:collapse;width:100%;font-size:13px;min-width:1560px">
+          <table style="border-collapse:collapse;width:100%;font-size:13px;min-width:1720px">
             <thead>
               <tr>
                 <sc-for list="{{ columns }}" as="c" hint-placeholder-count="10">
@@ -396,6 +396,10 @@ a:hover{color:#0B2545;text-decoration:underline}
                   <td style="padding:11px 12px;border-bottom:1px solid #EDF1F6;vertical-align:top">
                     <span style="display:inline-block;padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:500;background:{{ r.estadoBg }};color:{{ r.estadoColor }};white-space:nowrap">{{ r.estado }}</span>
                     <div style="font-size:11px;margin-top:5px;font-family:'IBM Plex Mono',monospace;color:{{ r.proxColor }}">{{ r.prox }}</div>
+                  </td>
+                  <td style="padding:11px 12px;border-bottom:1px solid #EDF1F6;vertical-align:top;max-width:190px">
+                    <span style="display:inline-block;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;line-height:1.35;background:{{ r.asignacionBg }};color:{{ r.asignacionColor }}">{{ r.asignacion }}</span>
+                    <div style="font-size:11px;color:#6B7A8D;margin-top:5px">{{ r.asignacionSub }}</div>
                   </td>
                   <td style="padding:11px 12px;border-bottom:1px solid #EDF1F6;text-align:center;vertical-align:top">{{ r.alertBadge }}</td>
                 </tr>
@@ -490,6 +494,11 @@ a:hover{color:#0B2545;text-decoration:underline}
 class Component extends DCLogic {
   state = {
     raw: [], loading: true, notice: '', updatedAt: '', sources: null, demo: false,
+    /* Etiquetas REALES de la fila 1 de la hoja «Asignación» (columnas O y P).
+       Las publica la capa de datos en asignacionLabels porque esas columnas no
+       están en el esquema documentado: sólo la POSICIÓN es estable y el rótulo
+       puede cambiar mañana. null = sin payload (demo o Web App caído). */
+    asignacionLabels: null,
     view: 'panorama', q: '', etapa: '', fondo: '', comuna: '', evaluador: '', hito: '', plazo: '',
     sel: null, sortKey: 'nPostulacion', sortDir: 1,
     /* Alcance de TODA salida documental — CSV, Word e impresión/PDF — para que
@@ -527,11 +536,12 @@ class Component extends DCLogic {
   /* Datos de demostración. Usan el VOCABULARIO CANÓNICO del proceso (los mismos
      literales que emite la planilla) para no enseñar un idioma que después no
      existe, e incluyen a propósito los tres casos del tri-estado y un valor
-     fuera de dominio, que es lo que hay que poder ver en pantalla. */
+     fuera de dominio, que es lo que hay que poder ver en pantalla. También los
+     tres casos de la hoja Asignación: O y P, sólo O, y sin fila (→ «—»). */
   DEMO = [
-    { nPostulacion: '1', nombreProyecto: 'Talento juvenil regional en la capital mundial de la música, Viena 2026', institucion: 'Fundación Jóvenes Músicos Chile', rutInstitucion: '65.100.200-1', comuna: 'Viña del Mar', fondo: 'Cultura', categoria: 'Caso Emblemático', monto: 30920000, etapa: 'Priorización CORE', estadoFactibilidad: 'HABILITAR FORMULACIÓN DE EXPEDIENTE', evaluadorFactibilidad: 'C. Molina', dictamenAC: 'EVALUACIÓN TÉCNICA FAVORABLE', estadoAC: 'Favorable', evaluadorAC: 'P. Salas', rondaAC: '2', observacionesAbiertasAC: 0, observacionesCerradasAC: 5, fechaEvaluacionAC: '2026-06-12', acuerdoCore: 'Sí', acuerdoCoreEstado: 'si', acuerdoCoreRaw: 'Sí', pronunciamiento: 'Aprobado', acuerdoCoreNumero: '184/2026', acuerdoCoreFecha: '2026-07-02', acuerdoCoreUrl: 'https://example.org/acuerdo-184', resolucionMarca: 'Sí', resolucionMarcaEstado: 'si', resolucionMarcaRaw: 'Sí', resolucionNumero: 'RE 1204', resolucionFecha: '2026-07-15', resolucionUrl: 'https://example.org/re-1204', fechaInicioEjecucion: '7/07/2026', fechaTerminoEjecucion: '30/07/2026', estadoEjecucion: 'En ejecución', alertas: [] },
+    { nPostulacion: '1', nombreProyecto: 'Talento juvenil regional en la capital mundial de la música, Viena 2026', institucion: 'Fundación Jóvenes Músicos Chile', rutInstitucion: '65.100.200-1', comuna: 'Viña del Mar', fondo: 'Cultura', categoria: 'Caso Emblemático', monto: 30920000, etapa: 'Priorización CORE', estadoFactibilidad: 'HABILITAR FORMULACIÓN DE EXPEDIENTE', evaluadorFactibilidad: 'C. Molina', dictamenAC: 'EVALUACIÓN TÉCNICA FAVORABLE', estadoAC: 'Favorable', evaluadorAC: 'P. Salas', rondaAC: '2', observacionesAbiertasAC: 0, observacionesCerradasAC: 5, fechaEvaluacionAC: '2026-06-12', acuerdoCore: 'Sí', acuerdoCoreEstado: 'si', acuerdoCoreRaw: 'Sí', pronunciamiento: 'Aprobado', acuerdoCoreNumero: '184/2026', acuerdoCoreFecha: '2026-07-02', acuerdoCoreUrl: 'https://example.org/acuerdo-184', resolucionMarca: 'Sí', resolucionMarcaEstado: 'si', resolucionMarcaRaw: 'Sí', resolucionNumero: 'RE 1204', resolucionFecha: '2026-07-15', resolucionUrl: 'https://example.org/re-1204', fechaInicioEjecucion: '7/07/2026', fechaTerminoEjecucion: '30/07/2026', estadoEjecucion: 'En ejecución', asignacionO: 'Expediente al día', asignacionP: 'Rendición parcial recibida', alertas: [] },
     { nPostulacion: '2', nombreProyecto: 'Semillero de campeones: renace Nahuel Rowing, Placilla', institucion: 'Club Deportivo Social Nahuel Rowing', rutInstitucion: '65.100.200-2', comuna: 'Valparaíso', fondo: 'Deporte', categoria: 'Caso Excepcional', monto: 46333000, etapa: 'Admisibilidad y Consistencia', estadoFactibilidad: 'HABILITAR FORMULACIÓN DE EXPEDIENTE', evaluadorFactibilidad: 'C. Molina', dictamenAC: 'CON OBSERVACIONES', estadoAC: 'En observaciones', evaluadorAC: 'M. Toro', rondaAC: '1', observacionesAbiertasAC: 4, observacionesCerradasAC: 1, fechaEvaluacionAC: '2026-06-28', acuerdoCore: 'No', acuerdoCoreEstado: 'no', acuerdoCoreRaw: 'No', resolucionMarca: 'No', resolucionMarcaEstado: 'no', resolucionMarcaRaw: 'No', estadoEjecucion: '', fechaInicioEjecucion: '30/06/2026', fechaTerminoEjecucion: '21/12/2026', alertas: ['4 observaciones abiertas hace más de 15 días'] },
-    { nPostulacion: '3', nombreProyecto: 'Sportiva Italiana multicampeonas: básquetbol femenino 2026', institucion: 'Sociedad Sportiva Italiana', rutInstitucion: '65.100.200-3', comuna: 'Valparaíso', fondo: 'Deporte', categoria: 'Caso Emblemático', monto: 39136800, etapa: 'Priorización CORE', estadoFactibilidad: 'HABILITAR FORMULACIÓN DE EXPEDIENTE', evaluadorFactibilidad: 'R. Pérez', dictamenAC: 'EVALUACIÓN TÉCNICA FAVORABLE', estadoAC: 'Favorable', evaluadorAC: 'M. Toro', rondaAC: '1', observacionesAbiertasAC: 0, observacionesCerradasAC: 3, fechaEvaluacionAC: '2026-06-20', acuerdoCore: 'Sí', acuerdoCoreEstado: 'si', acuerdoCoreRaw: 'SI', pronunciamiento: 'Aprobado', acuerdoCoreNumero: '186/2026', acuerdoCoreFecha: '2026-07-02', acuerdoCoreUrl: 'https://example.org/acuerdo-186', resolucionMarca: 'En tramitación', resolucionMarcaEstado: 'tramitacion', resolucionMarcaRaw: 'En tramitación', resolucionNumero: '', fechaInicioEjecucion: '15/06/2026', fechaTerminoEjecucion: '30/12/2026', estadoEjecucion: 'Por iniciar', alertas: [] },
+    { nPostulacion: '3', nombreProyecto: 'Sportiva Italiana multicampeonas: básquetbol femenino 2026', institucion: 'Sociedad Sportiva Italiana', rutInstitucion: '65.100.200-3', comuna: 'Valparaíso', fondo: 'Deporte', categoria: 'Caso Emblemático', monto: 39136800, etapa: 'Priorización CORE', estadoFactibilidad: 'HABILITAR FORMULACIÓN DE EXPEDIENTE', evaluadorFactibilidad: 'R. Pérez', dictamenAC: 'EVALUACIÓN TÉCNICA FAVORABLE', estadoAC: 'Favorable', evaluadorAC: 'M. Toro', rondaAC: '1', observacionesAbiertasAC: 0, observacionesCerradasAC: 3, fechaEvaluacionAC: '2026-06-20', acuerdoCore: 'Sí', acuerdoCoreEstado: 'si', acuerdoCoreRaw: 'SI', pronunciamiento: 'Aprobado', acuerdoCoreNumero: '186/2026', acuerdoCoreFecha: '2026-07-02', acuerdoCoreUrl: 'https://example.org/acuerdo-186', resolucionMarca: 'En tramitación', resolucionMarcaEstado: 'tramitacion', resolucionMarcaRaw: 'En tramitación', resolucionNumero: '', fechaInicioEjecucion: '15/06/2026', fechaTerminoEjecucion: '30/12/2026', estadoEjecucion: 'Por iniciar', asignacionO: 'Asignado a analista', alertas: [] },
     { nPostulacion: '4', nombreProyecto: 'Festival Vilanova España', institucion: 'ONG Vivir Consentidos', rutInstitucion: '65.100.200-4', comuna: 'Valparaíso', fondo: 'Cultura', categoria: 'Caso Emblemático', monto: 50000000, etapa: 'Factibilidad', estadoFactibilidad: '', evaluadorFactibilidad: '', dictamenAC: '', estadoAC: '', acuerdoCore: '', acuerdoCoreEstado: 'vacio', acuerdoCoreRaw: '', estadoEjecucion: '', alertas: ['Ficha incompleta: sin fecha de recepción ni código de postulación'] },
     { nPostulacion: '5', nombreProyecto: 'Apoyo 15° Festival de Cine Ojo de Pescado', institucion: 'Corporación Cultural Ojo de Pescado', rutInstitucion: '65.100.200-5', comuna: 'Valparaíso', fondo: 'Cultura', categoria: 'Caso Emblemático', monto: 33619700, etapa: 'Ejecución', estadoFactibilidad: 'HABILITAR FORMULACIÓN DE EXPEDIENTE', evaluadorFactibilidad: 'R. Pérez', dictamenAC: 'EVALUACIÓN TÉCNICA FAVORABLE', estadoAC: 'Favorable', evaluadorAC: 'P. Salas', rondaAC: '1', observacionesAbiertasAC: 0, observacionesCerradasAC: 2, fechaEvaluacionAC: '2026-06-05', acuerdoCore: 'Sí', acuerdoCoreEstado: 'si', acuerdoCoreRaw: 'Sí', pronunciamiento: 'Aprobado', acuerdoCoreNumero: '171/2026', acuerdoCoreFecha: '2026-06-18', resolucionMarca: 'Sí', resolucionMarcaEstado: 'si', resolucionMarcaRaw: 'Sí', resolucionNumero: 'RE 1150', resolucionFecha: '2026-06-30', resolucionUrl: 'https://example.org/re-1150', fechaInicioEjecucion: '1/07/2026', fechaTerminoEjecucion: '31/10/2026', estadoEjecucion: 'En ejecución', alertas: [] },
     { nPostulacion: '6', nombreProyecto: 'Valparaíso rumbo al torneo First Lego League Korea International 2026', institucion: 'Corporación Educacional Instituto del Mar', rutInstitucion: '65.100.200-6', comuna: 'Valparaíso', fondo: 'Educación', categoria: 'Caso Emblemático', monto: 41420541, etapa: 'Admisibilidad y Consistencia', estadoFactibilidad: 'OBSERVAR PARA SUBSANACIÓN', evaluadorFactibilidad: 'C. Molina', dictamenAC: 'REVISIÓN PENDIENTE', estadoAC: 'En revisión', evaluadorAC: 'P. Salas', rondaAC: '1', observacionesAbiertasAC: 2, observacionesCerradasAC: 0, fechaEvaluacionAC: '2026-07-10', acuerdoCore: 'En tramitación', acuerdoCoreEstado: 'tramitacion', acuerdoCoreRaw: 'en trámite', estadoEjecucion: '', fechaInicioEjecucion: '1/09/2026', fechaTerminoEjecucion: '30/11/2026', alertas: [] },
@@ -898,10 +908,14 @@ class Component extends DCLogic {
       // Avisos no fatales del Apps Script (p. ej. una hoja ausente): se muestran
       // sin descartar los datos que sí llegaron.
       const avisos = Array.isArray(json.avisos) ? json.avisos.filter(a => this.has(a)) : [];
-      this.setState({ raw, loading: false, demo: false, updatedAt: json.updatedAt || '', sources: json.sources || null, notice: avisos.length ? 'Avisos de la fuente: ' + avisos.join(' — ') : '' });
+      /* asignacionLabels viaja al nivel raíz del payload (no por fila): son un
+         dato de la HOJA, no de un proyecto, y así un cambio de rótulo en la
+         planilla se refleja en todas partes con una sola lectura. */
+      const asignacionLabels = (json.asignacionLabels && typeof json.asignacionLabels === 'object') ? json.asignacionLabels : null;
+      this.setState({ raw, loading: false, demo: false, updatedAt: json.updatedAt || '', sources: json.sources || null, asignacionLabels, notice: avisos.length ? 'Avisos de la fuente: ' + avisos.join(' — ') : '' });
     } catch (err) {
       this.setState({
-        raw: this.DEMO, loading: false, demo: true, updatedAt: '', sources: null,
+        raw: this.DEMO, loading: false, demo: true, updatedAt: '', sources: null, asignacionLabels: null,
         notice: 'No fue posible conectar con la planilla en vivo (' + err.message + '). Se muestran datos de demostración para revisar el diseño; al publicar en GitHub Pages con el endpoint habilitado la carga es automática.'
       });
     }
@@ -938,6 +952,10 @@ class Component extends DCLogic {
       r.categoria, r.etapa, r.estadoFactibilidad, r.evaluadorFactibilidad, r.dictamenAC,
       r.estadoAC, r.evaluadorAC, r.pronunciamiento, r.acuerdoCoreNumero, r.resolucionNumero,
       r.estadoEjecucion, r.observacionesFactibilidad, r.observacionesAC, r.resumen, r.comentario,
+      /* Las anotaciones de la hoja Asignación también se buscan: son VALORES de
+         la fila, y esta lista es explícita — un campo que no se agrega acá es
+         un campo que el buscador no ve. */
+      r.asignacionO, r.asignacionP,
       core.label, core.raw, res.label, res.raw,
       this.money(this.parseMoney(r.monto)), String(this.parseMoney(r.monto)),
       this.alerts(r).join(' '), this.inconsistencias(r).join(' ')
@@ -1176,7 +1194,26 @@ class Component extends DCLogic {
       (partes.length ? partes.join(' · ') : 'ninguna marca leída');
     return 'Factibilidad ' + (f.factibilidad || 0) +
       ' · A&C ' + (f.admisibilidadConsistencia || 0) +
+      /* La hoja Asignación también se audita acá: un 0 delata que la planilla
+         no respondió o vino sin filas, sin tener que abrir proyecto por proyecto. */
+      ' · Asignación ' + (f.asignacion || 0) +
       ' · Priorización ' + core;
+  }
+
+  /**
+   * Etiquetas de las columnas O y P de la hoja «Asignación», SIEMPRE resueltas:
+   * primero las reales que publica la capa de datos (asignacionLabels, leídas
+   * de la fila 1 de la planilla), y sólo si no llegaron —demo, Web App caído o
+   * celda de encabezado vacía— los mismos fallbacks que usa Code.gs
+   * ('Col. O' / 'Col. P'). Una sola definición para el modal, el CSV y el
+   * .docx: si divergieran, el mismo dato tendría tres nombres.
+   */
+  etiquetasAsignacion() {
+    const l = this.state.asignacionLabels || {};
+    return {
+      o: this.clean(l.o) || 'Col. O',
+      p: this.clean(l.p) || 'Col. P'
+    };
   }
 
   /* ===========================================================================
@@ -1233,12 +1270,34 @@ class Component extends DCLogic {
     { k: 'estadoEjecucion', t: 'Ejecución', peso: 7 },
     { k: '_hitos', t: 'Hitos', peso: 4, jc: 'center', val: 'hitos' },
     { k: '_estado', t: 'Estado actual', peso: 9, val: 'estado' },
+    /* Columnas O y P de la hoja «Asignación», en la misma posición que en la
+       tabla en pantalla (tras «Estado actual»). El rótulo REAL de la fila 1 se
+       materializa en colsExport() —depende del estado, y esta lista es
+       estática—; acá vive sólo el fallback, el mismo de la capa de datos. */
+    { k: 'asignacionO', t: 'Asignación · Col. O', peso: 9 },
+    { k: 'asignacionP', t: 'Asignación · Col. P', peso: 9 },
     { k: '_alertas', t: 'Alertas', peso: 13, val: 'alertas' },
     { k: '_inconsistencias', t: 'Inconsistencias de datos', peso: 13, val: 'inconsistencias', docx: false },
     /* Contenido escrito por personas que el tablero mostraba pero no exportaba. */
     { k: 'observacionesFactibilidad', t: 'Observaciones de Factibilidad', peso: 12, docx: false },
     { k: 'observacionesAC', t: 'Observaciones de A&C', peso: 12, docx: false }
   ];
+
+  /**
+   * COLS_EXPORT con los rótulos que dependen del ESTADO ya resueltos. Las dos
+   * columnas de Asignación llevan la etiqueta real de la fila 1 de la planilla
+   * (asignacionLabels); el resto pasa intacto. El CSV y el Word consumen esta
+   * versión, nunca la lista cruda, para que el encabezado exportado diga lo
+   * mismo que el modal.
+   */
+  colsExport() {
+    const etiq = this.etiquetasAsignacion();
+    return this.COLS_EXPORT.map(c => {
+      if (c.k === 'asignacionO') return Object.assign({}, c, { t: 'Asignación · ' + etiq.o });
+      if (c.k === 'asignacionP') return Object.assign({}, c, { t: 'Asignación · ' + etiq.p });
+      return c;
+    });
+  }
 
   /** URL asociada a una columna, cuando la hay. El enlace acompaña al dato; nunca lo sustituye. */
   urlDeColumna(r, col) {
@@ -1822,7 +1881,7 @@ class Component extends DCLogic {
   exportCsv = () => {
     const alc = this.state.alcanceExport === 'todos' ? 'todos' : 'filtrados';
     const d = this.datosExport(alc);
-    const cols = this.COLS_EXPORT;
+    const cols = this.colsExport();
     /* Los saltos de línea se aplanan: una fila del archivo = un proyecto. Entre
        comillas serían CSV válido, pero rompen cualquier lectura por líneas. */
     const esc = v => '"' + String(v == null ? '' : v).replace(/\r?\n/g, ' | ').replace(/"/g, '""') + '"';
@@ -1850,7 +1909,7 @@ class Component extends DCLogic {
     const D = this.DOCX;
     const alc = alcance === 'todos' ? 'todos' : 'filtrados';
     const datos = this.datosExport(alc);
-    const cols = this.COLS_EXPORT.filter(c => c.docx !== false);
+    const cols = this.colsExport().filter(c => c.docx !== false);
     const g = D.geometria(o.orientacion || 'horizontal');
     const rels = [];
     const ahora = o.fecha || new Date();
@@ -1959,7 +2018,8 @@ class Component extends DCLogic {
 
     cuerpo += D.p(
       'Fuente: planilla «Proyectos Postulados L3» — hojas Factibilidad, Admisibilidad y Consistencia, ' +
-      'y Priorización. Cruce por N° de postulación. Los conteos de acuerdo CORE y de resolución ' +
+      'y Priorización — más la planilla «Asignación Px Linea 3 Resumen» (hoja Asignación, columnas O y P). ' +
+      'Cruce por N° de postulación. Los conteos de acuerdo CORE y de resolución ' +
       'aprobatoria se rigen por la marca declarada; el enlace, cuando existe, sólo documenta.',
       { pt: 7.5, color: GRIS, antes: 80 });
 
@@ -2268,7 +2328,11 @@ class Component extends DCLogic {
       ganttSubtitle = ganttRows.length + ' proyectos con fechas informadas · la línea roja marca hoy';
     }
 
-    const colDefs = [['nPostulacion', 'N°', 60, 'left'], ['nombreProyecto', 'Proyecto / institución', 300, 'left'], ['fondo', 'Fondo y comuna', 150, 'left'], ['monto', 'Monto', 120, 'right'], ['_hitos', 'Hitos del proceso', 210, 'left'], ['estadoFactibilidad', 'Factibilidad', 160, 'left'], ['dictamenAC', 'A&C', 180, 'left'], ['acuerdoCore', 'Priorización', 130, 'left'], ['_estado', 'Estado actual', 160, 'left'], ['_alertas', '⚠', 60, 'center']];
+    /* «Asignación» (T-A) va INMEDIATAMENTE a la derecha de «Estado actual» y
+       antes del badge ⚠. El encabezado es estático a propósito: las etiquetas
+       reales de O y P son largas y cambiantes; viven en el modal y en los
+       exports, donde hay espacio para nombrarlas. */
+    const colDefs = [['nPostulacion', 'N°', 60, 'left'], ['nombreProyecto', 'Proyecto / institución', 300, 'left'], ['fondo', 'Fondo y comuna', 150, 'left'], ['monto', 'Monto', 120, 'right'], ['_hitos', 'Hitos del proceso', 210, 'left'], ['estadoFactibilidad', 'Factibilidad', 160, 'left'], ['dictamenAC', 'A&C', 180, 'left'], ['acuerdoCore', 'Priorización', 130, 'left'], ['_estado', 'Estado actual', 160, 'left'], ['_asignacion', 'Asignación', 170, 'left'], ['_alertas', '⚠', 60, 'center']];
     const columns = colDefs.map(([key, label, w, align]) => {
       // Las columnas derivadas no se pueden ordenar: que no finjan que sí con el
       // cursor de mano, porque era una afordancia muerta.
@@ -2335,6 +2399,15 @@ class Component extends DCLogic {
         prioSub: prioSub || (mr.estado === 'si' ? 'Resolución: Sí' : ''),
         estado: est.label, estadoBg: est.bg, estadoColor: est.color,
         prox: prox.text, proxColor: prox.color,
+        /* Celda Asignación (T-A): O es la línea principal y P la sublínea, el
+           mismo patrón que fact/factSub. El vacío se imprime «—» con el tono de
+           «sin dato» —no es un estado del proceso, es una anotación ausente— y
+           una P sin O deja el «—» arriba: la sublínea nunca asciende, porque
+           cambiaría de columna de origen sin avisar. */
+        asignacion: this.clean(r.asignacionO) || '—',
+        asignacionBg: this.has(r.asignacionO) ? '#EEF1F5' : '#F1F4F8',
+        asignacionColor: this.has(r.asignacionO) ? '#41505F' : '#8A96A4',
+        asignacionSub: this.clean(r.asignacionP),
         // El indicador distingue alerta de proceso (⚠) de dato roto (⌀).
         alertBadge: (al.length ? '⚠ ' + al.length : '') + (al.length && inc.length ? ' · ' : '') + (inc.length ? '⌀ ' + inc.length : '') || '—',
         rowBg: S.sel === r ? '#F0F7F8' : 'transparent',
@@ -2414,6 +2487,15 @@ class Component extends DCLogic {
       F('Respaldo de la resolución', [this.clean(sel.resolucionNumero), this.has(sel.resolucionFecha) ? this.fmtDate(sel.resolucionFecha) : ''].filter(Boolean).join(' · '));
 
       F('Ejecución', [this.fmtDate(sel.fechaInicioEjecucion), this.fmtDate(sel.fechaTerminoEjecucion), this.clean(sel.estadoEjecucion)].filter(x => x && x !== '—').join(' · '));
+
+      /* T-A: los dos campos de la hoja «Asignación», rotulados con las
+         etiquetas REALES de su fila 1 (asignacionLabels). 'Col. O'/'Col. P'
+         sólo si la fuente no las entregó — mismo fallback que Code.gs. El
+         prefijo «Asignación · » conserva la procedencia: un rótulo escrito a
+         mano en otra planilla no puede confundirse con un campo del proceso. */
+      const etiqAsig = this.etiquetasAsignacion();
+      F('Asignación · ' + etiqAsig.o, sel.asignacionO);
+      F('Asignación · ' + etiqAsig.p, sel.asignacionP);
       // Code.gs emite `rutInstitucion`; las dos claves que se leían antes no las
       // emitía nadie, así que el RUT nunca se mostraba.
       F('RUT institución', sel.rutInstitucion || sel.rutOrganizacion || sel.rut);

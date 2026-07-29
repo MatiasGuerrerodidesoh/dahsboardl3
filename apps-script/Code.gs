@@ -80,6 +80,24 @@
  *    la UI con respaldo por texto libre: las dos capas afirmaban cosas opuestas
  *    sobre la misma fila. El criterio es UNO y está en esFactibilidadHabilitada_
  *    / esDictamenACFavorable_, con la MISMA semántica que el tablero.
+ *
+ * AMPLIACIONES 2026-07-29 (asignación O/P y llave del export nuevo)
+ * -----------------------------------------------------------------
+ * 18. Nueva fuente: la planilla «Asignación Px Linea 3 Resumen», hoja
+ *    «Asignación». Sus columnas O y P no están en el esquema documentado de la
+ *    hoja —que llega hasta N = Fecha asignación; las agregaron a mano— así que
+ *    se leen POR POSICIÓN y las etiquetas salen de la fila 1 REAL, no de este
+ *    archivo (asignacionLabels en el payload). La hoja ANOTA proyectos
+ *    existentes y nunca crea uno: un folio que no está en la cartera queda
+ *    dicho en avisos, no inventado como tarjeta. Si la planilla no responde
+ *    (openById lanza cuando no hay acceso), el aviso lo dice y el resto del
+ *    tablero se sirve igual — mismo patrón de degradación que resolverHoja_.
+ * 19. La hoja Iniciativas quedó con el esquema del export nuevo de la
+ *    plataforma: la llave viene rotulada «Codigo_Postulacion» —trae LOS MISMOS
+ *    números, confirmado por Matías— y «Numero_Ingreso» ya no existe. Se suma
+ *    el alias DESPUÉS de «Numero_Ingreso», que conserva la prioridad por si el
+ *    padrón se restaura. Factibilidad, A&C y Priorización NO se tocan: esas
+ *    hojas las escriben otros scripts con su llave garantizada.
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
@@ -91,6 +109,27 @@ const CFG_DASHBOARD_L3 = Object.freeze({
     AC: 'Admisibilidad y Consistencia',
     PRIORIZACION: 'Priorización'
   })
+});
+
+/**
+ * Planilla APARTE: «Asignación Px Linea 3 Resumen», hoja «Asignación».
+ *
+ * Las columnas O y P se leen POR POSICIÓN (índices 1-based) y no por
+ * encabezado, a propósito: no están en el esquema documentado de la hoja —el
+ * mapeo llega hasta N = Fecha asignación— y las agregaron a mano, así que su
+ * rótulo puede cambiar mañana sin previo aviso. La POSICIÓN es lo único
+ * estable; el rótulo real de la fila 1 se publica como etiqueta
+ * (asignacionLabels) para que la UI muestre lo que la planilla dice hoy, y los
+ * fallbacks sólo aparecen si la fila 1 viene vacía en esas celdas.
+ */
+const CFG_ASIGNACION_L3 = Object.freeze({
+  SPREADSHEET_ID: '1U4N6RZL3gJ87_Pih8s6FnAiz_VgeFRQM2yGQkFraLBg',
+  SHEET: 'Asignación',
+  COL_FOLIO: 1,   // A — N° postulación, la llave de cruce (folio_ canónico)
+  COL_O: 15,      // O — primera columna anotada a mano
+  COL_P: 16,      // P — segunda columna anotada a mano
+  ETIQUETA_O_FALLBACK: 'Col. O',
+  ETIQUETA_P_FALLBACK: 'Col. P'
 });
 
 /**
@@ -308,7 +347,14 @@ function construirDashboardL3_() {
   const proyectos = new Map();
 
   iniciativas.rows.forEach(row => {
-    const folio = folio_(valor_(row, 'Numero_Ingreso', 'N° postulación'));
+    // El export nuevo de la plataforma rotula la llave «Codigo_Postulacion»
+    // —trae LOS MISMOS números que Numero_Ingreso, confirmado por Matías— y ya
+    // no incluye «Numero_Ingreso». El alias va DESPUÉS del histórico a
+    // propósito: si el padrón se restaura, «Numero_Ingreso» recupera la
+    // prioridad sin tocar nada. Sólo cambia la llave de INICIATIVAS: las hojas
+    // de Factibilidad/A&C/Priorización las escriben otros scripts con
+    // Numero_Ingreso / N° postulación garantizado, y no se tocan.
+    const folio = folio_(valor_(row, 'Numero_Ingreso', 'Codigo_Postulacion', 'N° postulación'));
     if (!folio) return;
     // Dos filas de Iniciativas pueden colapsar en el mismo folio canónico
     // (1C y 15). Gana la primera; la segunda solo completa lo que falte.
@@ -423,10 +469,40 @@ function construirDashboardL3_() {
     p.estadoEjecucion = valor_(row, 'Estado ejecución');
   });
 
+  // ASIGNACIÓN (planilla aparte). Se cruza DESPUÉS de las cuatro hojas porque
+  // esta hoja ANOTA la cartera, no la define: un folio de Asignación que no
+  // existe en Postulados L3 no crea un proyecto fantasma — queda dicho en
+  // avisos para que alguien revise cuál de las dos planillas está desactualizada.
+  const asignacion = leerAsignacionOP_(avisos);
+  const asignacionSinCruce = [];
+  asignacion.filas.forEach(fila => {
+    if (!fila.folio) return;
+    const p = proyectos.get(fila.folio);
+    if (!p) {
+      asignacionSinCruce.push(fila.folioCrudo || fila.folio);
+      return;
+    }
+    // Dos filas de Asignación pueden colapsar en el mismo folio canónico
+    // (1C ≡ 15): gana la primera y la segunda sólo completa lo que falte,
+    // igual que con las filas duplicadas de Iniciativas.
+    p.asignacionO = primero_(p.asignacionO, fila.o);
+    p.asignacionP = primero_(p.asignacionP, fila.p);
+  });
+  if (asignacionSinCruce.length) {
+    avisos.push('La hoja «' + CFG_ASIGNACION_L3.SHEET + '» trae ' + asignacionSinCruce.length +
+      ' fila(s) con folios que no existen en la cartera de Postulados L3 (' +
+      asignacionSinCruce.join(' · ') + '). La asignación sólo anota proyectos existentes: ' +
+      'esas filas no crean proyectos nuevos y quedan sin publicar.');
+  }
+
   const data = Array.from(proyectos.values()).map(p => {
     // Un proyecto que no aparece en Priorización igual tiene que traer las
     // marcas del contrato: 'vacio' es un estado, no una ausencia de campo.
     asegurarMarcasDelContrato_(p);
+    // Lo mismo con la asignación: la UI recibe SIEMPRE ambos campos, aunque
+    // vacíos, para no tener que distinguir undefined de ''.
+    if (p.asignacionO === undefined) p.asignacionO = '';
+    if (p.asignacionP === undefined) p.asignacionP = '';
     revisarDominiosEvaluativos_(p);
     p.alertas = calcularAlertas_(p);
     p.etapa = calcularEtapa_(p);
@@ -437,10 +513,19 @@ function construirDashboardL3_() {
     ok: true,
     updatedAt: new Date().toISOString(),
     avisos: avisos,
+    // Etiquetas REALES de la fila 1 de las columnas O y P de la hoja
+    // Asignación. Van al nivel raíz porque son metadato de la fuente, no de un
+    // proyecto: la UI las usa para el encabezado del expediente y los exports.
+    // Sólo traen los fallbacks ('Col. O' / 'Col. P') si la fila 1 viene vacía.
+    asignacionLabels: asignacion.labels,
     sources: {
       iniciativas: iniciativas.rows.length,
       factibilidad: factibilidad.rows.length,
       admisibilidadConsistencia: ac.rows.length,
+      // Conteo de FILAS con contenido de la hoja Asignación (planilla aparte).
+      // 0 con aviso = la planilla no respondió o la hoja no llega a O/P;
+      // 0 sin aviso = la hoja está realmente vacía.
+      asignacion: asignacion.filas.length,
       // Conteo de FILAS de la hoja Priorización. El nombre quedó heredado y lo
       // consume el pie del tablero; se mantiene, pero abajo van los conteos de
       // MARCAS, que son la pregunta que la gente realmente hace.
@@ -737,6 +822,99 @@ function resolverHoja_(ss, sheetName, avisos) {
     }
   }
   return candidatas[0];
+}
+
+/**
+ * Lee las columnas O y P de la hoja «Asignación» (planilla aparte, ver
+ * CFG_ASIGNACION_L3) POR POSICIÓN, con la llave de cruce en la columna A.
+ *
+ * Devuelve SIEMPRE la misma forma, pase lo que pase:
+ *   { labels: { o, p }, filas: [{ folio, folioCrudo, o, p }] }
+ *
+ * · labels — el rótulo real de la fila 1 en O y P; los fallbacks 'Col. O' /
+ *   'Col. P' sólo si esa celda de la fila 1 viene vacía. La UI y los exports
+ *   rotulan con esto, nunca con un nombre inventado acá.
+ * · folio  — ya canónico (folio_): es lo que permite que una fila escrita como
+ *   «15» anote al proyecto «1C».
+ * · filas  — las filas con contenido en llave/O/P; el conteo va a
+ *   sources.asignacion.
+ *
+ * Degradación, en el mismo espíritu que resolverHoja_: openById LANZA cuando la
+ * planilla no existe o no hay acceso (es otra planilla, con otros permisos que
+ * la principal), y una hoja ausente o más angosta que la columna P también es
+ * un estado posible. En los tres casos se avisa y se devuelve vacío: la
+ * asignación es un anexo del tablero, no puede derribarlo.
+ */
+function leerAsignacionOP_(avisos) {
+  const vacio = {
+    labels: {
+      o: CFG_ASIGNACION_L3.ETIQUETA_O_FALLBACK,
+      p: CFG_ASIGNACION_L3.ETIQUETA_P_FALLBACK
+    },
+    filas: []
+  };
+
+  let ss;
+  try {
+    ss = SpreadsheetApp.openById(CFG_ASIGNACION_L3.SPREADSHEET_ID);
+  } catch (error) {
+    if (avisos) {
+      avisos.push('No se pudo abrir la planilla de Asignación (' +
+        CFG_ASIGNACION_L3.SPREADSHEET_ID + '): ' +
+        (error && error.message ? error.message : String(error)) +
+        '. La columna «Asignación» viene vacía; el resto del tablero se sirve igual.');
+    }
+    return vacio;
+  }
+
+  const sheet = resolverHoja_(ss, CFG_ASIGNACION_L3.SHEET, avisos);
+  if (!sheet) return vacio;
+
+  const values = sheet.getDataRange().getDisplayValues();
+  if (!values.length) return vacio;
+
+  const iFolio = CFG_ASIGNACION_L3.COL_FOLIO - 1;
+  const iO = CFG_ASIGNACION_L3.COL_O - 1;
+  const iP = CFG_ASIGNACION_L3.COL_P - 1;
+
+  // Si el rango de datos no llega a la columna O, las columnas anotadas a mano
+  // todavía no existen (o las borraron). Eso se dice: un tablero sin columna
+  // de asignación y sin explicación es el mismo silencio que el CORE 0.
+  if (values[0].length < CFG_ASIGNACION_L3.COL_O) {
+    if (avisos) {
+      avisos.push('La hoja «' + sheet.getName() + '» de la planilla de Asignación tiene ' +
+        values[0].length + ' columnas y las columnas O y P (15 y 16) quedan fuera. ' +
+        'La columna «Asignación» viene vacía hasta que existan.');
+    }
+    return vacio;
+  }
+
+  const encabezadoO = texto_(values[0][iO]);
+  const encabezadoP = texto_(values[0][iP]);
+  if (avisos && (!encabezadoO || !encabezadoP)) {
+    avisos.push('La fila 1 de la hoja «' + sheet.getName() + '» (Asignación) no rotula ' +
+      (!encabezadoO && !encabezadoP ? 'las columnas O ni P' : (!encabezadoO ? 'la columna O' : 'la columna P')) +
+      ': se usa el rótulo de respaldo. Conviene ponerles nombre en la planilla.');
+  }
+
+  const filas = [];
+  values.slice(1).forEach(fila => {
+    const folioCrudo = texto_(fila[iFolio]);
+    const o = texto_(fila[iO]);
+    const p = texto_(fila[iP]);
+    // Una fila sin llave y sin valores en O/P no dice nada sobre la
+    // asignación, aunque tenga texto en otras columnas: no se cuenta.
+    if (!folioCrudo && !o && !p) return;
+    filas.push({ folio: folio_(folioCrudo), folioCrudo: folioCrudo, o: o, p: p });
+  });
+
+  return {
+    labels: {
+      o: encabezadoO || CFG_ASIGNACION_L3.ETIQUETA_O_FALLBACK,
+      p: encabezadoP || CFG_ASIGNACION_L3.ETIQUETA_P_FALLBACK
+    },
+    filas: filas
+  };
 }
 
 /**

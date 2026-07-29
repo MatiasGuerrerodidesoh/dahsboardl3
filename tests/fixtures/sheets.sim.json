@@ -19,23 +19,40 @@
     " · 52 — «en trámite??»: fuera de dominio, tiene que verse y no borrar la fila",
     " · 53 — marca de resolución «Sí» SIN N° ni enlace",
     " · 7 y 54 — N° y enlace de resolución SIN marca / con marca «No»",
-    " · 55 — dictamen A&C favorable con Factibilidad sin habilitar (regla T4)"
+    " · 55 — dictamen A&C favorable con Factibilidad sin habilitar (regla T4)",
+    "",
+    "Llave de Iniciativas (T-B): la hoja mezcla las dos épocas del export.",
+    " · 7, 16 y 50 conservan la llave en «Numero_Ingreso» (padrón antiguo)",
+    " · 1C, 45, 51, 52, 53, 54 y 55 traen la llave SOLO en «Codigo_Postulacion»",
+    "   —la celda de Numero_Ingreso vacía—, que es como quedó la hoja tras el",
+    "   export nuevo de la plataforma: mismos números, otro rótulo.",
+    "",
+    "`planillas` declara las planillas ADICIONALES que Code.gs abre por su",
+    "propio ID (SpreadsheetApp.openById). La de Asignación trae la hoja",
+    "«Asignación» con las columnas O y P anotadas a mano (fila 1: «Estado",
+    "expediente» / «Observación jefatura») y estos casos:",
+    " · 15 — anota al proyecto 1C vía la equivalencia canónica 1C ≡ 15",
+    " · 16 — O y P con valor (la fila «normal»)",
+    " · 53 — sólo O; la sublínea P debe omitirse en la UI",
+    " · 54 — sólo P; la línea principal O debe salir «—»",
+    " · 99 — folio que NO existe en la cartera: no crea proyecto fantasma,",
+    "   queda en avisos"
   ],
   "hojas": [
     {
       "nombre": "Iniciativas",
       "filas": [
-        ["Numero_Ingreso", "Nombre_Proyecto", "Nombre_Organizacion", "Rut_Organizacion", "Comuna", "Fondo", "Tipo_Categoria", "Monto_Solicitado_CLP", "Fecha_Inicio", "Fecha_Termino"],
-        ["1C", "Judocas de Hijuelas Rumbo al Sudamericano Lima 2026", "Club Deportivo Judo Fukuoka", "65.111.222-3", "Hijuelas", "Deporte", "Caso Emblemático", "12000000", "", ""],
-        ["7", "Circuito cultural comunal", "Org Siete", "65.777.111-1", "Quillota", "Cultura", "Caso Emergente", "18000000", "", ""],
-        ["16", "Festival Vilanova España", "ONG Vivir Consentidos", "65.999.888-7", "Valparaíso", "Cultura", "Caso Emblemático", "50000000", "", ""],
-        ["45", "Acercando el deporte y la cultura al valle de Aconcagua", "Club Deportivo Escolar Liceo Mixto Los Andes", "65.333.444-5", "Los Andes", "Deporte", "Caso Excepcional", "30000000", "", ""],
-        ["50", "Multicancha techada del sector alto", "Junta de Vecinos Cerro Alegre", "65.222.333-4", "Concón", "Deporte", "Caso Emergente", "9500000", "", ""],
-        ["51", "Escuela de teatro comunitario", "Corporación Cultural Villa Alemana", "65.444.555-6", "Villa Alemana", "Cultura", "Caso Emblemático", "27000000", "", ""],
-        ["52", "Biblioteca digital escolar", "Liceo Bicentenario de Quilpué", "65.666.777-8", "Quilpué", "Educación", "Caso Excepcional", "15000000", "", ""],
-        ["53", "Restauración del muelle histórico", "Fundación Patrimonio Costero", "65.888.999-0", "San Antonio", "Patrimonio", "Caso Emblemático", "40000000", "", ""],
-        ["54", "Circuito de trail running del valle", "Club Andino La Ligua", "65.101.202-3", "La Ligua", "Deporte", "Caso Emergente", "22000000", "", ""],
-        ["55", "Escuela de circo social del litoral", "Corporación Circo del Puerto", "65.303.404-5", "Cartagena", "Cultura", "Caso Emergente", "21000000", "", ""]
+        ["Numero_Ingreso", "Codigo_Postulacion", "Nombre_Proyecto", "Nombre_Organizacion", "Rut_Organizacion", "Comuna", "Fondo", "Tipo_Categoria", "Monto_Solicitado_CLP", "Fecha_Inicio", "Fecha_Termino"],
+        ["", "1C", "Judocas de Hijuelas Rumbo al Sudamericano Lima 2026", "Club Deportivo Judo Fukuoka", "65.111.222-3", "Hijuelas", "Deporte", "Caso Emblemático", "12000000", "", ""],
+        ["7", "", "Circuito cultural comunal", "Org Siete", "65.777.111-1", "Quillota", "Cultura", "Caso Emergente", "18000000", "", ""],
+        ["16", "", "Festival Vilanova España", "ONG Vivir Consentidos", "65.999.888-7", "Valparaíso", "Cultura", "Caso Emblemático", "50000000", "", ""],
+        ["", "45", "Acercando el deporte y la cultura al valle de Aconcagua", "Club Deportivo Escolar Liceo Mixto Los Andes", "65.333.444-5", "Los Andes", "Deporte", "Caso Excepcional", "30000000", "", ""],
+        ["50", "", "Multicancha techada del sector alto", "Junta de Vecinos Cerro Alegre", "65.222.333-4", "Concón", "Deporte", "Caso Emergente", "9500000", "", ""],
+        ["", "51", "Escuela de teatro comunitario", "Corporación Cultural Villa Alemana", "65.444.555-6", "Villa Alemana", "Cultura", "Caso Emblemático", "27000000", "", ""],
+        ["", "52", "Biblioteca digital escolar", "Liceo Bicentenario de Quilpué", "65.666.777-8", "Quilpué", "Educación", "Caso Excepcional", "15000000", "", ""],
+        ["", "53", "Restauración del muelle histórico", "Fundación Patrimonio Costero", "65.888.999-0", "San Antonio", "Patrimonio", "Caso Emblemático", "40000000", "", ""],
+        ["", "54", "Circuito de trail running del valle", "Club Andino La Ligua", "65.101.202-3", "La Ligua", "Deporte", "Caso Emergente", "22000000", "", ""],
+        ["", "55", "Escuela de circo social del litoral", "Corporación Circo del Puerto", "65.303.404-5", "Cartagena", "Cultura", "Caso Emergente", "21000000", "", ""]
       ]
     },
     {
@@ -80,5 +97,23 @@
         ["55", "", "", "", "", "", "No", "", "", "", "No", "", "", "", "", "", ""]
       ]
     }
-  ]
+  ],
+  "planillas": {
+    "1U4N6RZL3gJ87_Pih8s6FnAiz_VgeFRQM2yGQkFraLBg": {
+      "nombre": "Asignación Px Linea 3 Resumen",
+      "hojas": [
+        {
+          "nombre": "Asignación",
+          "filas": [
+            ["N° postulación", "Nombre proyecto", "Comuna", "Fondo", "Monto asignado", "Analista", "Unidad técnica", "Convenio", "N° Resolución", "Fecha Resolución", "Estado convenio", "Transferencia", "Rendición", "Fecha asignación", "Estado expediente", "Observación jefatura"],
+            ["15", "Judocas de Hijuelas Rumbo al Sudamericano Lima 2026", "Hijuelas", "Deporte", "", "", "", "", "", "", "", "", "", "2026-07-24", "Expediente en formulación", "Reasignar analista tras feriado legal"],
+            ["16", "FESTIVAL VILANOVA ESPAÑA", "Valparaíso", "Cultura", "50000000", "K. Pino", "Municipalidad de Valparaíso", "Firmado", "", "", "Vigente", "", "", "2026-07-25", "Convenio firmado", "Transferencia programada para agosto"],
+            ["53", "Restauración del muelle histórico", "San Antonio", "Patrimonio", "", "", "", "", "", "", "", "", "", "2026-07-26", "Asignado", ""],
+            ["54", "Circuito de trail running del valle", "La Ligua", "Deporte", "", "", "", "", "", "", "", "", "", "", "", "Falta certificado de vigencia de la directiva"],
+            ["99", "Sede social sector Los Molles", "Petorca", "Cultura", "", "", "", "", "", "", "", "", "", "", "Asignado", "Folio sin cruce con Postulados L3"]
+          ]
+        }
+      ]
+    }
+  }
 }

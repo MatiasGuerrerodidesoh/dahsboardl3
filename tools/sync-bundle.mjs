@@ -125,7 +125,10 @@ const RIESGO = ['table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption',
 function enHead(rel) {
   try {
     return execFileSync('git', ['show', 'HEAD:' + rel],
-      { cwd: RAIZ, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+      /* maxBuffer explícito: index.html pesa ~1,04 MiB y el tope por defecto de
+         execFileSync es 1 MiB — sin esto, leer el bundle de HEAD moría con
+         ENOBUFS y --markup abortaba culpando a git. */
+      { cwd: RAIZ, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 * 1024 * 1024 });
   } catch { return null; }
 }
 const dcEnHead = () => enHead(NOMBRE_DC);
