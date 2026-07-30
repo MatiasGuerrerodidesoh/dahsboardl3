@@ -108,7 +108,14 @@ const CFG_DASHBOARD_L3 = Object.freeze({
     FACTIBILIDAD: 'Factibilidad',
     AC: 'Admisibilidad y Consistencia',
     PRIORIZACION: 'Priorización'
-  })
+  }),
+  // La pestaña de priorización circula con dos nombres: «Priorización» (el
+  // brief y este archivo) y «Priorización Gobernador» (el API paralelo que
+  // estuvo desplegado, DashboardConsolidado.gs, lo buscaba así). No está claro
+  // cuál es el rótulo real de la pestaña — y no puede ser el código quien
+  // pierda esa apuesta: se aceptan ambos, en este orden, y el aviso declara
+  // bajo cuál se encontró.
+  PRIORIZACION_NOMBRES: Object.freeze(['Priorización', 'Priorización Gobernador'])
 });
 
 /**
@@ -335,7 +342,7 @@ function construirDashboardL3_() {
   const iniciativas = leerTablaPorEncabezados_(ss, CFG_DASHBOARD_L3.SHEETS.INICIATIVAS, avisos);
   const factibilidad = leerTablaPorEncabezados_(ss, CFG_DASHBOARD_L3.SHEETS.FACTIBILIDAD, avisos);
   const ac = leerTablaPorEncabezados_(ss, CFG_DASHBOARD_L3.SHEETS.AC, avisos);
-  const priorizacion = leerTablaPorEncabezados_(ss, CFG_DASHBOARD_L3.SHEETS.PRIORIZACION, avisos);
+  const priorizacion = leerTablaPorEncabezados_(ss, CFG_DASHBOARD_L3.PRIORIZACION_NOMBRES, avisos);
 
   revisarColumnaDeMarca_(priorizacion, CFG_DASHBOARD_L3.SHEETS.PRIORIZACION,
     ALIAS_MARCA_CORE_, 'acuerdo CORE', avisos);
@@ -771,8 +778,9 @@ function texto_(v) {
  * a oscuras también Factibilidad y A&C.
  */
 function leerTablaPorEncabezados_(ss, sheetName, avisos) {
+  const principal = Array.isArray(sheetName) ? sheetName[0] : sheetName;
   const sheet = resolverHoja_(ss, sheetName, avisos);
-  if (!sheet) return { nombre: sheetName, headers: [], claves: [], rows: [] };
+  if (!sheet) return { nombre: principal, headers: [], claves: [], rows: [] };
   const values = sheet.getDataRange().getDisplayValues();
   if (!values.length) return { nombre: sheet.getName(), headers: [], claves: [], rows: [] };
   const headers = values[0].map(String);
@@ -796,32 +804,50 @@ function leerTablaPorEncabezados_(ss, sheetName, avisos) {
  * la próxima variante vuelve a romperlo.
  */
 function resolverHoja_(ss, sheetName, avisos) {
-  const exacta = ss.getSheetByName(sheetName);
-  if (exacta) return exacta;
-
-  const objetivo = normalizar_(sheetName);
+  // Acepta un nombre o una lista de nombres en orden de preferencia (el caso
+  // real: «Priorización» vs «Priorización Gobernador»). El primero de la lista
+  // es el nombre canónico con que se reporta la sección.
+  const nombres = Array.isArray(sheetName) ? sheetName : [sheetName];
+  const principal = nombres[0];
   const hojas = ss.getSheets();
-  const candidatas = hojas.filter(sh => normalizar_(sh.getName()) === objetivo);
 
-  if (!candidatas.length) {
-    if (avisos) {
-      avisos.push('No existe la hoja «' + sheetName + '»: esa sección viene vacía. ' +
-        'Pestañas disponibles: ' + hojas.map(sh => sh.getName()).join(' · ') + '.');
+  // Primera pasada: coincidencia exacta con cualquiera de los nombres.
+  for (let i = 0; i < nombres.length; i++) {
+    const exacta = ss.getSheetByName(nombres[i]);
+    if (exacta) {
+      if (i > 0 && avisos) {
+        avisos.push('La hoja «' + principal + '» se encontró bajo su nombre alterno «' +
+          nombres[i] + '». Se leyó igual.');
+      }
+      return exacta;
     }
-    return null;
+  }
+
+  // Segunda pasada: coincidencia por nombre normalizado (tildes, espacios).
+  for (let i = 0; i < nombres.length; i++) {
+    const objetivo = normalizar_(nombres[i]);
+    const candidatas = hojas.filter(sh => normalizar_(sh.getName()) === objetivo);
+    if (candidatas.length) {
+      if (avisos) {
+        avisos.push('La hoja «' + principal + '» se encontró como «' + candidatas[0].getName() +
+          '» (difiere en tildes, mayúsculas o espacios). Se leyó igual, pero conviene ' +
+          'renombrar la pestaña: cualquier otra herramienta que la busque exacta no la va a encontrar.');
+        if (candidatas.length > 1) {
+          avisos.push('Hay ' + candidatas.length + ' pestañas que coinciden con «' + nombres[i] +
+            '» al normalizar (' + candidatas.map(sh => sh.getName()).join(' · ') +
+            '). Se usó la primera; el resto queda sin leer.');
+        }
+      }
+      return candidatas[0];
+    }
   }
 
   if (avisos) {
-    avisos.push('La hoja «' + sheetName + '» se encontró como «' + candidatas[0].getName() +
-      '» (difiere en tildes, mayúsculas o espacios). Se leyó igual, pero conviene ' +
-      'renombrar la pestaña: cualquier otra herramienta que la busque exacta no la va a encontrar.');
-    if (candidatas.length > 1) {
-      avisos.push('Hay ' + candidatas.length + ' pestañas que coinciden con «' + sheetName +
-        '» al normalizar (' + candidatas.map(sh => sh.getName()).join(' · ') +
-        '). Se usó la primera; el resto queda sin leer.');
-    }
+    avisos.push('No existe la hoja «' + principal + '»' +
+      (nombres.length > 1 ? ' (ni sus alternos: ' + nombres.slice(1).join(' · ') + ')' : '') +
+      ': esa sección viene vacía. Pestañas disponibles: ' + hojas.map(sh => sh.getName()).join(' · ') + '.');
   }
-  return candidatas[0];
+  return null;
 }
 
 /**
